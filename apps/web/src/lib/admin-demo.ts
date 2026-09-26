@@ -363,7 +363,7 @@ export function demoFetch(path: string, init: RequestInit & { json?: unknown }):
           headline: 'Last few left',
           subhead: `When these are gone they take a while to remake. ${noun}, hand-worked to order.`,
           ctaLabel: 'See what is left',
-          ctaHref: `/product/${ranked[0]!.slug}`,
+          ctaHref: `/product/${ranked[0]!.slug}/`,
           percentOff: 20,
           code: 'DEMO20',
           tint: null,

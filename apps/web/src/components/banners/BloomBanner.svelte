@@ -61,7 +61,7 @@
         <ul class="bloom-thumbs">
           {#each banner.products.slice(0, 4) as product (product.id)}
             <li>
-              <a href={`/product/${product.slug}`} title={product.name}>
+              <a href={`/product/${product.slug}/`} title={product.name}>
                 <img
                   src={product.images[0] ?? '/images/placeholder.svg'}
                   alt={product.name}

@@ -30,9 +30,9 @@ export const MOBILE_SHOP_LINKS: NavLink[] = [
 ];
 
 export const SITE_INFORMATION_LINKS: NavLink[] = [
-  { href: '/about', label: 'How it is made' },
+  { href: '/about/', label: 'How it is made' },
   { href: customCategory.href, label: 'Custom orders' },
-  { href: '/shipping', label: 'Collection & delivery' },
+  { href: '/shipping/', label: 'Collection & delivery' },
 ];
 
 /** Custom orders already has its own category entry in the mobile shop list. */

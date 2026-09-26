@@ -110,7 +110,7 @@
             stroke-linecap="round"></path>
         </svg>
         <p>Nothing in the basket yet.</p>
-        <a class="btn-stitch btn-stitch--ghost" href="/category/keychains" onclick={() => ui.close()}>
+        <a class="btn-stitch btn-stitch--ghost" href="/category/keychains/" onclick={() => ui.close()}>
           Have a look at the keychains
         </a>
       </div>
@@ -118,14 +118,14 @@
       <ul class="lines">
         {#each lines as line (line.productId)}
           <li class="line">
-            <a class="line-img" href={`/product/${line.slug}`} onclick={() => ui.close()}>
+            <a class="line-img" href={`/product/${line.slug}/`} onclick={() => ui.close()}>
               <img src={line.image} alt="" width="64" height="64" loading="lazy" />
             </a>
 
             <div class="line-body">
               <a
                 class="line-name"
-                href={`/product/${line.slug}`}
+                href={`/product/${line.slug}/`}
                 onclick={() => ui.close()}
               >{line.name}</a>
 

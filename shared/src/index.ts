@@ -85,31 +85,31 @@ export const CATEGORY_META: readonly CategoryMeta[] = [
     id: 'keychains',
     title: 'Keychains',
     blurb: 'Tiny crochet charms that clip onto a bag and refuse to stay put.',
-    href: '/category/keychains',
+    href: '/category/keychains/',
   },
   {
     id: 'bags',
     title: 'Bags',
     blurb: 'Totes and shoulder bags worked in sturdy cotton and raffia yarn.',
-    href: '/category/bags',
+    href: '/category/bags/',
   },
   {
     id: 'purses',
     title: 'Purses',
     blurb: 'Structured little bags with chain straps and buttoned flaps.',
-    href: '/category/purses',
+    href: '/category/purses/',
   },
   {
     id: 'bouquets',
     title: 'Bouquets & flowers',
     blurb: 'Never-wilt blooms — crocheted roses, daisies and full posies.',
-    href: '/category/bouquets',
+    href: '/category/bouquets/',
   },
   {
     id: 'custom',
     title: 'Custom orders',
     blurb: 'Tell me the colour, the size and the deadline. It gets made.',
-    href: '/custom-orders',
+    href: '/custom-orders/',
   },
 ] as const;
 
@@ -365,7 +365,7 @@ export const internalPathSchema = z
   .max(200)
   .refine(
     v => v === '/' || /^\/(?![/\\])/.test(v),
-    'Use a path on this site, like /category/purses',
+    'Use a path on this site, like /category/purses/',
   )
   .refine(v => !/[\u0000-\u001f\u007f]/.test(v), 'That path contains invalid characters');
 
@@ -414,7 +414,7 @@ export const bannerInputSchema = z.object({
   headline: z.string().trim().min(2, 'The banner needs a headline').max(90),
   subhead: z.string().trim().max(160).default(''),
   ctaLabel: z.string().trim().max(40).default('Shop the drop'),
-  ctaHref: internalPathSchema.default('/category/keychains'),
+  ctaHref: internalPathSchema.default('/category/keychains/'),
   percentOff: z.coerce.number().int().min(0).max(90).default(0),
   code: z
     .string()

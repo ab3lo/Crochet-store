@@ -44,7 +44,7 @@ const ownBanner =
  * `https://example.com` in a message is a support ticket waiting to happen.
  */
 const askUrl = whatsappUrl(
-  `Hello! I'd like to ask about the ${product.name}.\n\n${absolute(`/product/${product.slug}`)}\n\n${SALES_REGION.orderNote}`,
+  `Hello! I'd like to ask about the ${product.name}.\n\n${absolute(`/product/${product.slug}/`)}\n\n${SALES_REGION.orderNote}`,
 );
 
 const related = sortProducts(

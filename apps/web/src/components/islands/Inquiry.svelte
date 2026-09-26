@@ -105,7 +105,7 @@
 
   const productUrl = $derived(
     product && typeof window !== 'undefined'
-      ? `${window.location.origin}/product/${product.slug}`
+      ? `${window.location.origin}/product/${product.slug}/`
       : '',
   );
 

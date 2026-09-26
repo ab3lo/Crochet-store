@@ -4,14 +4,26 @@
 # custom headers — see the README for how to reproduce these there.
 
 /*
-  # The site is a static, self-contained bundle. Nothing is loaded from
-  # another origin except product images from the Supabase CDN, which is
-  # why `img-src` allows https:.
+  # Content-Security-Policy is not set here beyond `frame-ancestors`, and the
+  # rest of it must not be.
   #
-  # 'unsafe-inline' for style-src is required because Svelte scopes component
-  # CSS by injecting a <style> tag at runtime. 'unsafe-inline' is NOT allowed
-  # for script-src, which is the one that matters for XSS.
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https:; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  # It used to be hand-written here as `script-src 'self'`. That silently broke
+  # the whole site: Astro emits its hydration bootstrap as inline scripts, so
+  # the policy blocked the `<astro-island>` custom element from ever being
+  # defined. The pages still looked correct — the HTML is prerendered — but no
+  # island hydrated, so the cart, the catalogue filters and the admin panel
+  # were all inert.
+  #
+  # The rest of the policy now comes from `security.csp` in astro.config.mjs,
+  # which hashes the inline scripts and styles Astro emits. A header CSP and a
+  # meta CSP are both enforced and the stricter one wins, so re-adding a
+  # hash-less `script-src` here would reinstate exactly that outage.
+  #
+  # `frame-ancestors` is the one directive that has to stay here, because a
+  # policy delivered by <meta> cannot enforce it — browsers ignore it in a meta
+  # tag. A policy only restricts what it names, so this header contributes that
+  # single directive while Astro's meta tag contributes the rest.
+  Content-Security-Policy: frame-ancestors 'none'
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

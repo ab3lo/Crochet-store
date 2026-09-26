@@ -37,7 +37,7 @@
 >
   <div class="ed-grid">
     {#if hero}
-      <a class="ed-media" href={`/product/${hero.slug}`} tabindex="-1" aria-hidden="true">
+      <a class="ed-media" href={`/product/${hero.slug}/`} tabindex="-1" aria-hidden="true">
         <img
           src={hero.images[0] ?? '/images/placeholder.svg'}
           alt=""
@@ -85,7 +85,7 @@
         <ul class="ed-rail">
           {#each banner.products.slice(0, 5) as product (product.id)}
             <li>
-              <a href={`/product/${product.slug}`}>
+              <a href={`/product/${product.slug}/`}>
                 <img
                   src={product.images[0] ?? '/images/placeholder.svg'}
                   alt={product.name}

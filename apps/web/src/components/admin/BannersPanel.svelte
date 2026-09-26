@@ -109,7 +109,7 @@
       headline: '',
       subhead: '',
       ctaLabel: 'Shop the drop',
-      ctaHref: '/category/keychains',
+      ctaHref: '/category/keychains/',
       percentOff: 0,
       code: null,
       tint: null,
@@ -420,7 +420,7 @@
 
       <div class="field">
         <label for="ed-href">Button links to</label>
-        <input id="ed-href" bind:value={draft.ctaHref} placeholder="/category/purses" />
+        <input id="ed-href" bind:value={draft.ctaHref} placeholder="/category/purses/" />
         {#if fields.ctaHref}<p class="field-error">{fields.ctaHref}</p>{/if}
       </div>
 

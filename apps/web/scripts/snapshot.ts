@@ -59,7 +59,7 @@ const banners: BannerView[] = featured.length
         subhead:
           'When these are gone they take a while to remake. A small handful only, hand-worked to order.',
         ctaLabel: 'See what is left',
-        ctaHref: '/category/keychains',
+        ctaHref: '/category/keychains/',
         percentOff: 20,
         code: 'SCARCITY20',
         tint: null,

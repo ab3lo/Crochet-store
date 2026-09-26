@@ -71,16 +71,14 @@ const ogImage = absolute(image ?? '/images/og-default.svg');
     <a class="skip-link" href="#main">Skip to content</a>
     <slot />
 
-    {!bare && (
-      <script is:inline>
-        // Written inline to run before first paint: if a banner was
-        // dismissed this session, hide it before it flashes.
-        try {
-          if (sessionStorage.getItem('crochet.banner.dismissed')) {
-            document.documentElement.dataset.bannerDismissed = 'true';
-          }
-        } catch {}
-      </script>
-    )}
+    <!--
+      The "hide a dismissed banner before it flashes" script used to live here,
+      inline, and it was dead code: it set `data-banner-dismissed` on <html>,
+      and nothing ever read that attribute — no stylesheet, no component. The
+      dismissal is applied inside BannerRail, which filters the list once it
+      hydrates. Deleting it also removed the last inline script on the page,
+      which matters because `is:inline` opts a script out of Astro's CSP
+      hashing, so it was the one thing `script-src` could not account for.
+    -->
   </body>
 </html>

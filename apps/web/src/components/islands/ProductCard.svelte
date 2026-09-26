@@ -32,7 +32,7 @@
   class:card--sale={onSale}
   class:card--flash={added}
 >
-  <a class="card-media" href={`/product/${product.slug}`}>
+  <a class="card-media" href={`/product/${product.slug}/`}>
     <img
       src={image}
       alt={product.name}
@@ -57,7 +57,7 @@
 
   <div class="card-body">
     <h3 class="card-name">
-      <a href={`/product/${product.slug}`}>{product.name}</a>
+      <a href={`/product/${product.slug}/`}>{product.name}</a>
     </h3>
 
     {#if product.tagline}

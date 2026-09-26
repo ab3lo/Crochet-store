@@ -13,7 +13,59 @@ export default defineConfig({
   // itself. `output: 'static'` is deliberate — never switch to 'server'.
   output: 'static',
 
-  trailingSlash: 'never',
+  // Cloudflare Pages canonicalises a folder to its trailing slash, so a
+  // `never` here made every internal link 308 on the way to its own page.
+  // `always` means the links we emit, the canonical we advertise and the URL
+  // Pages actually serves are the same string.
+  trailingSlash: 'always',
+
+  /**
+   * Content Security Policy.
+   *
+   * This has to be Astro's, not a hand-written header, because Astro emits
+   * the hydration bootstrap as *inline* scripts — one that sets `Astro.only`
+   * and one that defines the `<astro-island>` custom element. A hand-written
+   * `script-src 'self'` blocked both, so no island on the site ever
+   * hydrated: the pages looked fine because the HTML is prerendered, but the
+   * cart, the filters and the whole admin panel were dead.
+   *
+   * `security.csp` hashes the inline scripts and styles it emits, so the
+   * policy stays strict without `'unsafe-inline'`. The matching policy is
+   * emitted as a `<meta http-equiv>`; the old copy in `public/_headers` is
+   * gone, because a header CSP and a meta CSP are both enforced and the
+   * hash-less one would win.
+   */
+  security: {
+    csp: {
+      algorithm: 'SHA-256',
+      directives: [
+        "default-src 'self'",
+        // Product photos come from the Supabase CDN.
+        "img-src 'self' data: https:",
+        "font-src 'self'",
+        "connect-src 'self' https:",
+        "form-action 'self'",
+        "base-uri 'self'",
+        "object-src 'none'",
+        "upgrade-insecure-requests",
+      ],
+      /**
+       * `style-src-elem` stays hash-only — that is the directive covering
+       * `<style>` blocks, and Astro hashes the ones it emits.
+       *
+       * `style-src-attr` is separate and has to be opened up, because the
+       * design leans on CSS custom properties set inline: the marquee takes
+       * `--from`/`--to`/`--accent`/`--mq-duration` as a `style` attribute,
+       * which accounts for ~54 of them across the build. Hashes cannot cover
+       * an attribute, and `'unsafe-hashes'` would need a hash per distinct
+       * attribute value — so the attribute kind is allowed outright and the
+       * element kind stays strict. Scripts get no such allowance.
+       */
+      styleDirective: {
+        resources: [{ resource: "'unsafe-inline'", kind: 'attribute' }],
+      },
+    },
+  },
 
   integrations: [
     svelte(),
@@ -32,17 +84,6 @@ export default defineConfig({
 
   build: {
     inlineStylesheets: 'auto',
-
-    // Emit `about.html`, not `about/index.html`.
-    //
-    // Astro's default `directory` format writes a folder per route, and
-    // Cloudflare Pages canonicalises a folder to its trailing slash: every
-    // `/about` came back 308 → `/about/`. That contradicted `trailingSlash:
-    // 'never'` above and, worse, pointed each page's own canonical tag and its
-    // sitemap entry at a URL that only redirects. `file` format lets Pages
-    // serve `/about` straight from `about.html`, so the links, the canonical
-    // and the sitemap all agree and there is no hop.
-    format: 'file',
   },
 
   prefetch: {
