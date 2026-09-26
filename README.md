@@ -100,23 +100,19 @@ Worker. It is **not** part of the static site deploy.
 | Output directory | `apps/web/dist` |
 | Environment | `PUBLIC_SITE_URL`, `PUBLIC_API_URL` |
 
-`apps/web/public/_headers` is picked up automatically and sets a Content
-Security Policy, HSTS, `X-Frame-Options: DENY`, and long-lived immutable
-caching for hashed assets.
+`apps/web/public/_headers` is picked up automatically and sets HSTS,
+`X-Frame-Options: DENY`, and long-lived immutable caching for hashed assets.
 
-### GitHub Pages
+The Content Security Policy itself is **not** in `_headers`. It comes from
+`security.csp` in `astro.config.mjs`, which hashes the inline scripts Astro
+emits — see the comment there. Only `frame-ancestors` stays in the header,
+because a policy delivered by `<meta>` cannot enforce it. Do not add a
+hash-less `script-src` to `_headers`: it will silently stop every Svelte
+island on the site from hydrating.
 
-`.github/workflows/deploy.yml` builds and publishes on every push to `main`.
-Set **Settings → Pages → Source** to **GitHub Actions**.
-
-GitHub Pages cannot set response headers, so `_headers` is ignored there.
-Two consequences worth knowing:
-
-- No CSP. Add one at the CDN in front of it, or accept the gap on a
-  static brochure site.
-- `/admin` is a static page like any other. It holds no secrets — the guard
-  is `role === 'admin'` in the API — so exposing the file is fine.
-  `robots.txt` and a `noindex` meta tag keep it out of search results.
+Cloudflare's build image ships Bun 1.2, which cannot read `lockfileVersion: 2`
+in `bun.lock`. Set **`BUN_VERSION`** to `1.4.0` in the project's build
+variables, for both production and preview.
 
 ### Keeping it current
 

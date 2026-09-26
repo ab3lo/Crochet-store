@@ -27,7 +27,7 @@ build time.
 
 | | What | Where | Needs secrets? |
 | --- | --- | --- | --- |
-| **Storefront** | `apps/web` — 22 static HTML pages | Cloudflare Pages or GitHub Pages | No. Only two public URLs. |
+| **Storefront** | `apps/web` — 22 static HTML pages | Cloudflare Pages | No. Only two public URLs. |
 | **API** | `apps/api` — a Bun + Hono process | Fly.io, Railway, Render, a VPS | Yes. Five secrets. |
 
 The storefront is fully static. It renders from a committed snapshot
@@ -36,7 +36,7 @@ database is down. The API is only needed at *runtime*, for the admin panel
 and for the catalogue to update between deploys.
 
 ```
-  Browser ──────► Cloudflare Pages / GitHub Pages   (static HTML, no secrets)
+  Browser ──────► Cloudflare Pages                  (static HTML, no secrets)
      │                            │
      │  /admin  ────────────────► │  calls the API with the session cookie
      ▼                            ▼
@@ -263,7 +263,10 @@ CMD ["bun", "run", "--cwd", "apps/api", "start"]
 
 The storefront is static, so it goes to any static host.
 
-### Cloudflare Pages (recommended — it honours `_headers`)
+### Cloudflare Pages
+
+The storefront deploys here. Connect the repo under **Workers & Pages →
+`<project>` → Settings → Builds → Connect to Git**, production branch `main`.
 
 | Setting | Value |
 | --- | --- |
@@ -272,40 +275,41 @@ The storefront is static, so it goes to any static host.
 | Build output directory | `apps/web/dist` |
 | Root directory | *(leave blank)* |
 
-Environment variables → **both** Production and Preview:
+Build variables and environment variables → **both** Production and Preview:
 
-| Variable | Value |
-| --- | --- |
-| `PUBLIC_API_URL` | `https://crochet-api.fly.dev` |
-| `PUBLIC_SITE_URL` | your shop's public origin |
+| Variable | Kind | Value |
+| --- | --- | --- |
+| `BUN_VERSION` | build | `1.4.0` |
+| `PUBLIC_SITE_URL` | env | your shop's public origin |
+| `PUBLIC_API_URL` | env | your deployed API, or leave unset for snapshot-only |
 
-Because `bun.lock` is committed, Cloudflare's build image may not have Bun.
-Add a **build command** that installs it first:
+`BUN_VERSION` is not optional. Cloudflare's build image ships Bun 1.2, and
+`bun.lock` is `lockfileVersion: 2`, which 1.2 cannot parse. Without it the
+build fails at `bun install --frozen-lockfile` with `Unknown lockfile
+version`. Pin it to the Bun that generated the lockfile rather than `latest`,
+so the build stays reproducible.
 
-```bash
-curl -fsSL https://bun.sh/install | bash && ~/.bun/bin/bun install --frozen-lockfile && ~/.bun/bin/bun run build
-```
+`apps/web/public/_headers` is picked up automatically. It sets HSTS,
+`X-Frame-Options: DENY` and immutable caching for hashed assets.
 
-`apps/web/public/_headers` is picked up automatically. It sets the Content
-Security Policy, HSTS, `X-Frame-Options: DENY` and immutable caching for hashed
-assets.
+**The Content Security Policy is not in `_headers`.** It comes from
+`security.csp` in `astro.config.mjs`, which hashes the inline scripts and
+styles Astro emits. A hand-written `script-src 'self'` in `_headers` blocks
+Astro's hydration bootstrap, so `<astro-island>` is never defined and no Svelte
+island on the site hydrates — the pages still render, because the HTML is
+prerendered, so it looks like a successful deploy. Only `frame-ancestors`
+stays in the header, because a policy in a `<meta>` tag cannot enforce it.
 
 ### GitHub Pages
 
-`.github/workflows/deploy.yml` is already set up. In the repo:
+Not used. A workflow for it existed and was removed: the storefront is on
+Cloudflare Pages, and leaving a second deploy path wired up only meant a
+failing run on every push to `main`.
 
-1. **Settings → Pages → Source** → **GitHub Actions**
-2. **Settings → Secrets and variables → Actions**:
-   - add `PUBLIC_SITE_URL` as a **repository variable**
-   - add `PUBLIC_API_URL` as a **repository variable**
-3. Push to `main`.
-
-GitHub Pages **cannot set response headers**, so `_headers` is ignored there.
-That means no CSP. If that matters, put Cloudflare in front, or accept the gap
-on a static site with no user-generated content.
-
-`/admin` is a static page like any other. It holds no secrets — the guard is
-`role === 'admin` in the API — so serving the file is fine. `robots.txt` and a
+GitHub Pages cannot set response headers, so `_headers` is ignored there —
+which would mean no CSP at all. For the same reason it is not a fallback
+worth keeping. `/admin` is a static page like any other; it holds no secrets
+(the guard is `role === 'admin'` in the API), and `robots.txt` plus a
 `noindex` meta tag keep it out of search results.
 
 ### Adding a custom domain
