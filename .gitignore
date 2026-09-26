@@ -5,10 +5,35 @@ dist/
 .wrangler/
 
 # env
+#
+# The old rules only covered `.env`, `.env.local` and `.env.*.local`, which
+# left `.env.production`, `.env.staging` and `.env.development` free to be
+# committed. This repository is public, so a real deployment env file is the
+# one file that must never be pushed. Ignore every variant, then re-admit the
+# single documented template.
 .env
-.env.local
-.env.*.local
+.env.*
 !.env.example
+
+# Keys, certs and anything else credential-shaped. A deploy that needs one of
+# these should read it from the platform's secret store, not the repo.
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+.netrc
+.npmrc
+.pgpass
+
+# Cloudflare / wrangler auth state
+.dev.vars
+.dev.vars.*
+.mf/
+
 
 # local data
 *.sqlite
