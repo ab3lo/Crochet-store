@@ -2,27 +2,13 @@
 /**
  * Floating WhatsApp button.
  *
- * Static markup plus CSS — no island, no framework. It is a link; making it
+ * Static markup plus CSS — no island, no JavaScript. It is a link; making it
  * a hydrated component would ship a runtime for something the browser
- * already does. The one script here is ~30 lines of measurement, bundled by
- * Astro as an ordinary module (so `script-src 'self'` covers it — an
- * `is:inline` script would not be hashed by `security.csp`).
+ * already does.
  *
  * The mark is inline SVG rather than a font or an image request: no extra
  * network request, and it inherits `currentColor` so the button's palette
  * lives in CSS.
- *
- * ## Docking
- *
- * A fixed button in the corner is the right thing 95% of the way down a page
- * and the wrong thing inside the footer, where it sits on top of the links it
- * is meant to sit beside. So when the footer arrives this one stands down and
- * the footer's own WhatsApp button takes over — that one is in the flow under
- * the community invite, so it is already the right size, and nothing has to
- * be measured or moved. Scroll back up and this returns.
- *
- * The handover is the `data-footer-visible` attribute on <html>, set by the
- * observer in `Footer.astro`. All this needs to do is get out of the way.
  */
 
 import { contact, whatsappUrl } from '@/lib/contact';
@@ -56,7 +42,6 @@ const href = whatsappUrl();
     bottom: 1rem;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 0.5rem;
     padding: 0.7rem 0.95rem;
     border-radius: 999px;
@@ -73,11 +58,7 @@ const href = whatsappUrl();
     font-size: 0.88rem;
     font-weight: 600;
     text-decoration: none;
-    transition:
-      transform 200ms ease,
-      opacity 200ms ease,
-      box-shadow 140ms ease,
-      background-color 140ms ease;
+    transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
   }
 
   .wa:hover {
@@ -91,27 +72,10 @@ const href = whatsappUrl();
     box-shadow: 1px 1px 0 color-mix(in oklab, var(--color-ink) 22%, transparent);
   }
 
-  /* Handed over. `visibility` rather than `display` so it cannot be focused
-     or clicked while it is on its way out, and it is transitioned so it does
-     not vanish abruptly while still looking present. */
-  :global(html[data-footer-visible]) .wa {
-    opacity: 0;
-    transform: translateY(10px) scale(0.96);
-    pointer-events: none;
-    visibility: hidden;
-    transition:
-      transform 200ms ease,
-      opacity 200ms ease,
-      visibility 0s linear 200ms;
-  }
-
   .wa-mark { flex-shrink: 0; }
 
   /* Circle on a phone: the label would cover the content underneath. */
-  .wa-label {
-    display: none;
-    white-space: nowrap;
-  }
+  .wa-label { display: none; }
 
   @media (min-width: 640px) {
     .wa-label { display: inline; }
@@ -120,9 +84,5 @@ const href = whatsappUrl();
   /* Give the footer room so the button never sits on top of a link. */
   @media (max-width: 639px) {
     .wa { padding: 0.85rem; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .wa { transition: background-color 140ms ease, box-shadow 140ms ease; }
   }
 </style>
