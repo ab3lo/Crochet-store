@@ -106,13 +106,11 @@ export default defineConfig({
   },
 
   image: {
-    // Only matters if `astro:assets` is ever used for optimisation — product
-    // photos are plain `<img>` today, because the catalogue is populated at
-    // runtime after the build. Listed so that if it is switched on, the
-    // remote host has to be named here rather than failing at build time.
-    //
-    // Product photos are served from Cloudflare R2, not Supabase: the
-    // database is Supabase Postgres, the images are not.
-    domains: ['*.r2.dev', '*.r2.cloudflarestorage.com'],
+    // Product photos come from the Supabase CDN; the placeholders are local
+    // SVG. Nothing is optimised at build time because the catalogue is
+    // populated at runtime, after the build, so this only matters if
+    // `astro:assets` is ever switched on — at which point the remote host has
+    // to be named here or the build fails.
+    domains: ['*.supabase.co'],
   },
 });
