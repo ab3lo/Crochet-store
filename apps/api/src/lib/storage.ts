@@ -1,19 +1,42 @@
 /**
- * Supabase Storage for product imagery.
+ * Cloudflare R2 for product imagery.
  *
- * Uses the service-role key on purpose: uploads originate from the
- * authenticated admin API, and the key never reaches the browser. The
- * bucket is public-read, so the storefront can hotlink without a token.
+ * R2 rather than Supabase Storage, for the free tier: R2's egress is free
+ * and unmetered, while Supabase's free plan allows 5 GB/month and then bills
+ * $0.09/GB. A twelve-product shop sits comfortably inside the storage quota
+ * either way, but Supabase has a bandwidth cliff and R2 does not.
+ *
+ * It is also the same vendor as the Pages deploy, so the images can be served
+ * from a domain in the same zone — same origin as the site, no cross-origin
+ * TLS handshake on the repeat visit that actually matters.
+ *
+ * Uses `Bun.S3Client` rather than the Workers R2 binding: this API runs as a
+ * standalone Bun process on Fly.io or similar, where a Workers binding does not
+ * exist. S3Client is built into Bun 1.2+, so this adds no dependency.
+ *
+ * The bucket is public-read and nothing else. Writes arrive only through this
+ * module, authenticated by the R2 credentials in the environment, which never
+ * reach the browser. Uploads are never "upsert" — a new key is minted per
+ * upload, so replacing an image cannot destroy the file another row still
+ * points at.
+ *
+ * Note on the URLs this returns: they are absolute and are stored in
+ * `product_images.url`. Nothing in the schema knows or cares which host serves
+ * them, so moving an image between hosts is a re-upload, not a migration.
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { env } from '../env.ts';
 
-const client = createClient(
-  env.SUPABASE_URL,
-  env.SUPABASE_SERVICE_ROLE_KEY,
-  { auth: { persistSession: false, autoRefreshToken: false } },
-);
+const client = new Bun.S3Client({
+  // R2's S3-compatible endpoint carries the account id, so there is no
+  // separate `accountId` option. `region` is ignored by R2 but the client
+  // wants one.
+  endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  region: 'auto',
+  bucket: env.R2_BUCKET,
+  accessKeyId: env.R2_ACCESS_KEY_ID,
+  secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+});
 
 const ALLOWED = new Map([
   ['image/jpeg', 'jpg'],
@@ -57,15 +80,16 @@ export async function uploadProductImage(
   const rand = crypto.randomUUID().slice(0, 8);
   const path = `${productId}/${stamp}-${rand}.${ext}`;
 
-  const { error } = await client.storage
-    .from(env.SUPABASE_STORAGE_BUCKET)
-    .upload(path, file, { contentType: file.type, upsert: false });
-
-  if (error) {
-    console.error('[storage] upload failed:', error.message);
+  try {
+    await client.write(path, file, {
+      // Makes the object self-describing for anything fetching it directly,
+      // so a browser is not left guessing between eight formats.
+      type: file.type,
+    });
+  } catch (err) {
+    console.error('[storage] R2 upload failed:', (err as Error).message);
     throw new UploadError('The upload did not go through. Try again.');
   }
 
-  const { data } = client.storage.from(env.SUPABASE_STORAGE_BUCKET).getPublicUrl(path);
-  return { url: data.publicUrl, path };
+  return { url: `${env.R2_PUBLIC_URL}/${path}`, path };
 }

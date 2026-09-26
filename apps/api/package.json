@@ -15,7 +15,6 @@
   "dependencies": {
     "@crochet/shared": "workspace:*",
     "@hono/zod-validator": "^0.7.2",
-    "@supabase/supabase-js": "^2.58.0",
     "better-auth": "~1.4.22",
     "hono": "^4.13.9",
     "pg": "^8.23.0",

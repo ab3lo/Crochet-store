@@ -20,6 +20,7 @@ import {
   listProducts,
   query,
   queryOne,
+  replaceProductImages,
   toBanner,
   toBannerViews,
   type BannerRow,
@@ -91,7 +92,9 @@ adminRoutes.post('/products', async (c) => {
         parsed.priceCents,
         parsed.compareAtCents,
         parsed.category,
-        parsed.images,
+        // The column is text[]; the objects carry the attribution and live in
+        // product_images. Same list, two shapes — see replaceProductImages.
+        parsed.images.map((i) => i.url),
         JSON.stringify(parsed.details),
         parsed.stock,
         parsed.madeToOrder,
@@ -99,6 +102,12 @@ adminRoutes.post('/products', async (c) => {
         parsed.sortOrder,
       ],
     );
+
+    // A create with images should not leave them unattributed.
+    if (parsed.images.length > 0) {
+      await replaceProductImages(row!.id as string, parsed.images);
+    }
+
     return ok(c, { id: row!.id }, 201);
   } catch (err) {
     return unexpected(c, err);
@@ -136,7 +145,12 @@ adminRoutes.patch('/products/:id', async (c) => {
   for (const [key, value] of entries) {
     const column = columns[key];
     if (!column) continue; // Ignore unknown keys rather than 500.
-    values.push(key === 'details' ? JSON.stringify(value) : value);
+    // `images` parses to objects; the column only stores the URLs.
+    if (key === 'images') {
+      values.push((value as { url: string }[]).map((i) => i.url));
+    } else {
+      values.push(key === 'details' ? JSON.stringify(value) : value);
+    }
     sets.push(`${column} = $${values.length}`);
   }
   values.push(c.req.param('id'));
@@ -160,6 +174,14 @@ adminRoutes.patch('/products/:id', async (c) => {
       values,
     );
     if (!row) return fail(c, 404, 'No such product.');
+
+    // Images and their attribution are stored in two places, so they are
+    // written together — see replaceProductImages. Only when this request
+    // actually touched the image list, so a rename does not wipe provenance.
+    if (parsed.images) {
+      await replaceProductImages(row.id as string, parsed.images);
+    }
+
     return ok(c, { id: row.id });
   } catch (err) {
     return unexpected(c, err);

@@ -24,6 +24,12 @@
   const onSale = $derived(hasDiscount(product));
   const stock = $derived(stockLabel(product));
   const image = $derived(product.images[0] ?? '/images/placeholder.svg');
+  /**
+   * Attribution for the image actually shown, not for the product. Unsplash
+   * and Pexels both expect the photographer to be named when their work is
+   * used, so this is rendered rather than left in the database.
+   */
+  const credit = $derived(product.imageCredits?.[0] ?? null);
   const added = $derived($cart.lastAdded === product.id);
 </script>
 
@@ -56,6 +62,17 @@
   </a>
 
   <div class="card-body">
+    {#if credit?.name}
+      <p class="card-credit">
+        {#if credit.url}
+          Photo by <a href={credit.url} target="_blank" rel="noopener noreferrer nofollow"
+            >{credit.name}</a
+          >
+        {:else}
+          Photo: {credit.name}
+        {/if}
+      </p>
+    {/if}
     <h3 class="card-name">
       <a href={`/product/${product.slug}/`}>{product.name}</a>
     </h3>
@@ -151,6 +168,25 @@
     padding: 0.9rem 1rem 1rem;
     flex: 1;
   }
+
+  /* Attribution for a stock photo. Quiet by design: it is a legal obligation,
+     not a selling point, so it sits above the name in the faintest ink and
+     stays out of the way of the price. */
+  .card-credit {
+    order: -1;
+    margin: 0 0 0.15rem;
+    font-size: 0.68rem;
+    line-height: 1.4;
+    color: var(--color-ink-faint);
+  }
+
+  .card-credit a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .card-credit a:hover { color: var(--color-rose-deep); }
 
   .card-name {
     margin: 0;

@@ -19,6 +19,16 @@
     product.images.length > 0 ? product.images : ['/images/placeholder.svg'],
   );
 
+  /**
+   * Attribution for the image on screen. Follows `active` rather than naming
+   * the first image, because the shopper is looking at whichever one they
+   * clicked to. Unsplash and Pexels both expect the photographer named.
+   */
+  const credit = $derived(
+    // The placeholder stands in for a missing image and has nobody to credit.
+    images[active] === '/images/placeholder.svg' ? null : product.imageCredits?.[active] ?? null,
+  );
+
   let active = $state(0);
   let thumbs = $state<HTMLButtonElement[]>([]);
 
@@ -89,6 +99,18 @@
           </svg>
         </button>
       </div>
+      {/if}
+
+    {#if credit?.name}
+      <p class="gallery-credit">
+        {#if credit.url}
+          Photo by <a href={credit.url} target="_blank" rel="noopener noreferrer nofollow"
+            >{credit.name}</a
+          >
+        {:else}
+          Photo: {credit.name}
+        {/if}
+      </p>
     {/if}
   </div>
 
@@ -115,6 +137,22 @@
 
 <style>
   .gallery { display: grid; gap: 0.75rem; }
+
+  /* Under the stage, so it reads as a caption on the photo rather than as
+     another line of product copy. */
+  .gallery-credit {
+    margin: 0.55rem 0 0;
+    font-size: 0.72rem;
+    color: var(--color-ink-faint);
+  }
+
+  .gallery-credit a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .gallery-credit a:hover { color: var(--color-rose-deep); }
 
   .stage {
     position: relative;

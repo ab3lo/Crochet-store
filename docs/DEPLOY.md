@@ -92,12 +92,23 @@ BETTER_AUTH_URL=https://your-api.fly.dev
 BETTER_AUTH_TRUSTED_ORIGINS=https://your-shop.pages.dev
 
 # Settings → Database → Connection string → URI
-# Use the POOLER one (port 6543), not the direct one.
-DATABASE_URL=postgresql://postgres.yourref:PASSWORD@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+# Use the DIRECT one, or the SESSION pooler on port 5432.
+# Do NOT use port 6543: that is transaction mode only, and its role
+# (`postgres.<ref>`) neither owns the tables nor bypasses RLS — so every
+# query would return zero rows with no error, which looks like an empty shop.
+DATABASE_URL=postgresql://postgres.yourref:PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
 
-SUPABASE_URL=https://yourref.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_STORAGE_BUCKET=product-images
+# Product images live in Cloudflare R2, not Supabase Storage: R2's egress is
+# free and unmetered, where Supabase's free plan allows 5 GB/month then bills.
+# R2 → Manage R2 API Tokens → Create Account API Token → Object Read & Write.
+R2_ACCOUNT_ID=your-cloudflare-account-id
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET=product-images
+# Public base for the bucket, no trailing slash. A custom domain in the same
+# zone as the storefront beats the r2.dev URL: same-origin images skip a
+# cross-origin TLS handshake on the repeat visit.
+R2_PUBLIC_URL=https://img.your-shop.com
 SEED_ADMIN_EMAIL=you@example.com
 ```
 
@@ -212,8 +223,10 @@ bunx fly@flyctl.dev secrets set \
   BETTER_AUTH_URL="https://crochet-api.fly.dev" \
   BETTER_AUTH_TRUSTED_ORIGINS="https://your-shop.pages.dev,http://localhost:4321" \
   DATABASE_URL="postgresql://...?sslmode=require" \
-  SUPABASE_URL="https://yourref.supabase.co" \
-  SUPABASE_SERVICE_ROLE_KEY="..." \
+  R2_ACCOUNT_ID="..." \
+  R2_ACCESS_KEY_ID="..." \
+  R2_SECRET_ACCESS_KEY="..." \
+  R2_PUBLIC_URL="https://img.your-shop.com" \
   TRUSTED_PROXY=false
 bunx fly@latest deploy
 bunx fly@flyctl.org scale count 1      # do not scale to 2

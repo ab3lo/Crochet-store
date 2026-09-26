@@ -14,8 +14,11 @@ import {
   type BannerView,
   type Category,
   type CustomOrder,
+  type ImageCredit,
+  type ImageSource,
   type OrderStatus,
   type Product,
+  type ParsedProductImage,
   type ProductView,
 } from '@crochet/shared';
 import { env } from './env.ts';
@@ -90,6 +93,22 @@ export interface ProductRow extends QueryResultRow {
   updated_at: Date;
 }
 
+/**
+ * One row of `product_images` — see migration 0003. Carries the attribution
+ * that a bare URL in `products.images` cannot.
+ */
+export interface ProductImageRow extends QueryResultRow {
+  id: string;
+  product_id: string;
+  url: string;
+  source: ImageSource;
+  source_id: string | null;
+  credit_name: string | null;
+  credit_url: string | null;
+  alt: string | null;
+  sort_order: number;
+}
+
 export interface BannerRow extends QueryResultRow {
   id: string;
   slug: string;
@@ -135,7 +154,112 @@ export function toProduct(r: ProductRow): Product {
     sortOrder: r.sort_order,
     createdAt: isoReq(r.created_at),
     updatedAt: isoReq(r.updated_at),
+    // Overwritten by attachImageCredits. Left undefined here so a product that
+    // has never been through the 0003 backfill carries no empty array that
+    // every reader would have to null-check around.
   };
+}
+
+/**
+ * Attach attribution to each product's images, positionally.
+ *
+ * `product_images` is the source of truth for *where an image came from*;
+ * `products.images` remains the ordered list the storefront renders. They are
+ * kept in step by `replaceProductImages` on write and by the 0003 backfill, so
+ * index N of one lines up with index N of the other.
+ *
+ * Done as one query for the whole page rather than per product — a category
+ * page is a dozen products and this is the difference between one round trip
+ * and a dozen.
+ */
+async function attachImageCredits(products: Product[]): Promise<Product[]> {
+  if (products.length === 0) return products;
+
+  const rows = await query<ProductImageRow>(
+    `SELECT id, product_id, url, source, source_id, credit_name, credit_url, alt, sort_order
+       FROM product_images
+      WHERE product_id = ANY($1::uuid[])
+      ORDER BY product_id, sort_order, created_at`,
+    [products.map((p) => p.id)],
+  );
+
+  const byProduct = new Map<string, ProductImageRow[]>();
+  for (const row of rows) {
+    const list = byProduct.get(row.product_id);
+    if (list) list.push(row);
+    else byProduct.set(row.product_id, [row]);
+  }
+
+  for (const product of products) {
+    const images = byProduct.get(product.id);
+    if (!images || images.length === 0) continue;
+
+    // Index by URL rather than trusting array order to line up: the two arrays
+    // are written together, but a hand-edited products.images row should not
+    // be able to attach the wrong photographer's name to a photo.
+    const creditByUrl = new Map(
+      images.map((i) => [
+        i.url,
+        {
+          source: i.source,
+          name: i.credit_name,
+          url: i.credit_url,
+          sourceId: i.source_id,
+        } satisfies ImageCredit,
+      ]),
+    );
+
+    product.imageCredits = product.images.map((u) => creditByUrl.get(u) ?? null);
+  }
+
+  return products;
+}
+
+/**
+ * Replace a product's images and their attribution in one shot.
+ *
+ * Both tables are written together on purpose. `products.images` is the
+ * ordered list the storefront renders and `product_images` is where the
+ * attribution lives; if they were written separately a partial failure would
+ * leave a photo on the page with the wrong photographer's name beside it.
+ *
+ * A site-relative path (the bundled SVG placeholders) is kept in
+ * `products.images` but skipped here — it is not an external image and there is
+ * nothing to attribute.
+ */
+export async function replaceProductImages(
+  productId: string,
+  images: ParsedProductImage[],
+): Promise<void> {
+  const external = images.filter((i) => /^https?:\/\//i.test(i.url));
+  const ordered = [...external].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  await query('DELETE FROM product_images WHERE product_id = $1', [productId]);
+
+  for (const [index, image] of ordered.entries()) {
+    await query(
+      `INSERT INTO product_images
+         (product_id, url, source, source_id, credit_name, credit_url, alt, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (product_id, url) DO UPDATE
+         SET source = EXCLUDED.source,
+             source_id = EXCLUDED.source_id,
+             credit_name = EXCLUDED.credit_name,
+             credit_url = EXCLUDED.credit_url,
+             alt = EXCLUDED.alt,
+             sort_order = EXCLUDED.sort_order`,
+      [
+        productId,
+        image.url,
+        image.source,
+        image.sourceId ?? null,
+        image.creditName ?? null,
+        image.creditUrl ?? null,
+        image.alt ?? null,
+        index,
+      ],
+    );
+  }
 }
 
 export function toBanner(r: BannerRow): Banner {
@@ -281,18 +405,35 @@ export async function listProducts(f: ProductFilter = {}): Promise<ProductView[]
      ${limit ? `LIMIT ${limit}` : ''}`;
 
   const products = (await query<ProductRow>(sql, params)).map(toProduct);
+  await attachImageCredits(products);
   return applySalesToProducts(products, await activeBanners());
 }
 
+/**
+ * One product by slug, for the public storefront.
+ *
+ * `hidden = false` is not optional here. `listProducts` has always filtered
+ * unlisted products out, and without the same predicate on this path a hidden
+ * product was still readable by guessing its slug — which defeats the point of
+ * hiding it, since slugs are visible in the admin and in old links.
+ *
+ * Callers that legitimately need a hidden product (the admin panel) should
+ * query by id through the admin route rather than widening this.
+ */
 export async function getProductBySlug(
   slug: string,
 ): Promise<ProductView | null> {
   const row = await queryOne<ProductRow>(
-    `SELECT ${PRODUCT_COLUMNS} FROM products p WHERE p.slug = $1 LIMIT 1`,
+    `SELECT ${PRODUCT_COLUMNS} FROM products p
+      WHERE p.slug = $1 AND p.hidden = false
+      LIMIT 1`,
     [slug],
   );
   if (!row) return null;
-  const [view] = applySalesToProducts([toProduct(row)], await activeBanners());
+  const [view] = applySalesToProducts(
+    await attachImageCredits([toProduct(row)]),
+    await activeBanners(),
+  );
   return view ?? null;
 }
 

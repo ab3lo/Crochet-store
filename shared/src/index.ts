@@ -163,6 +163,30 @@ export const CATEGORY_META: readonly CategoryMeta[] = [
 
 /* ── Products ────────────────────────────────────────────────────────── */
 
+/**
+ * Where a product image came from.
+ *
+ * Deliberately does not include Instagram or Pinterest. Both block hotlinking
+ * — their CDNs return 403 for third-party referrers and both prohibit it in
+ * their terms — so an image "hosted on Instagram" renders broken on a storefront
+ * and may break again when the CDN rotates the URL. `external` is the escape
+ * hatch for anything else, on the understanding that whoever points a product at
+ * a host has checked that host permits hotlinking.
+ */
+export const IMAGE_SOURCES = ['stock', 'self-hosted', 'external', 'legacy'] as const;
+export type ImageSource = (typeof IMAGE_SOURCES)[number];
+
+/** Attribution for one image. Rendered on the storefront, not just stored. */
+export interface ImageCredit {
+  source: ImageSource;
+  /** Photographer or studio, where the licence requires naming them. */
+  name: string | null;
+  /** Link to the original. Null when there is nowhere to link. */
+  url: string | null;
+  /** Upstream id, so the image can be refetched or swapped later. */
+  sourceId: string | null;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -174,8 +198,23 @@ export interface Product {
   /** Struck-through "was" price. null when the item is not discounted. */
   compareAtCents: number | null;
   category: Category;
-  /** Absolute URLs, already resolved against the Supabase public bucket. */
+  /**
+   * Absolute URLs in display order. Self-hosted uploads are resolved against
+   * the Supabase public bucket; externally sourced images are already absolute
+   * and are stored exactly as given.
+   */
   images: string[];
+  /**
+   * Attribution for images that come from outside this shop, positionally
+   * matching `images`. Stock libraries expect the photographer to be named and
+   * linked, so this is rendered rather than kept in a database corner.
+   *
+   * Sparse on purpose: a self-hosted image contributes nothing, so the array
+   * holds either a credit or null at each index. Optional because a product
+   * whose images are all self-hosted has nothing to say — readers should treat
+   * a missing array as "no attribution", not go looking for one.
+   */
+  imageCredits?: (ImageCredit | null)[];
   /** Free-form attributes: yarn weight, dimensions, stitch, care. */
   details: Record<string, string>;
   stock: number;
@@ -426,6 +465,42 @@ export const imageUrlSchema = z
   .url()
   .refine(v => /^https?:\/\//i.test(v), 'Images must be an http(s) URL');
 
+export const imageSourceSchema = z.enum(IMAGE_SOURCES);
+
+/**
+ * One image, with where it came from.
+ *
+ * `url` is required because the row exists to be rendered. Everything else is
+ * attribution. The one rule enforced here is that a stock image without a
+ * named photographer is a licensing mistake rather than a missing field, so it
+ * is rejected at the boundary instead of being discovered later.
+ */
+export const productImageInputSchema = z.object({
+  url: imageUrlSchema,
+  source: imageSourceSchema.default('self-hosted'),
+  sourceId: z.string().trim().max(120).nullish(),
+  creditName: z.string().trim().max(120).nullish(),
+  creditUrl: z
+    .string()
+    .trim()
+    .max(300)
+    .nullish()
+    .refine(v => v == null || /^https?:\/\//i.test(v), {
+      message: 'The credit link must be an http(s) URL',
+    }),
+  alt: z.string().trim().max(200).nullish(),
+  sortOrder: z.coerce.number().int().min(0).default(0),
+});
+
+export type ProductImageInput = z.input<typeof productImageInputSchema>;
+
+/**
+ * After parsing. Separate from the input because `z.coerce.number()` accepts
+ * anything coercible, so the *input* type of `sortOrder` is `unknown` — code
+ * that has the parsed value wants a real number to sort by.
+ */
+export type ParsedProductImage = z.output<typeof productImageInputSchema>;
+
 export const productInputSchema = z.object({
   name: z.string().trim().min(2, 'Give the product a name').max(120),
   slug: z
@@ -443,7 +518,25 @@ export const productInputSchema = z.object({
     .nullable()
     .default(null),
   category: categorySchema,
-  images: z.array(imageUrlSchema).max(12).default([]),
+  /**
+   * Accepts a bare URL or a full image object, and always parses to the
+   * object form. A bare string means "ours, nothing to attribute", which is
+   * what every existing caller — the seed, the demo fixtures, the admin's
+   * simple image field — already sends, so none of them had to change.
+   */
+  images: z
+    .array(z.union([imageUrlSchema, productImageInputSchema]))
+    .max(12)
+    .default([])
+    .transform(list =>
+      list
+        .map((entry, index) =>
+          typeof entry === 'string'
+            ? { url: entry, source: 'self-hosted' as const, sortOrder: index }
+            : { ...entry, sortOrder: entry.sortOrder ?? index },
+        )
+        .filter((image) => /^https?:\/\//i.test(image.url)),
+    ),
   details: z.record(z.string().max(64), z.string().max(200)).default({}),
   stock: z.coerce.number().int().min(0).default(0),
   madeToOrder: z.coerce.boolean().default(false),

@@ -20,9 +20,25 @@ const schema = z.object({
 
   DATABASE_URL: z.string().min(1, 'Supabase connection string is required'),
 
-  SUPABASE_URL: z.url(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
-  SUPABASE_STORAGE_BUCKET: z.string().default('product-images'),
+  /**
+   * Cloudflare R2, for product imagery.
+   *
+   * The database is Supabase Postgres; the images are not. R2's egress is free
+   * and unmetered, which is the whole reason it beat Supabase Storage here.
+   *
+   * `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` are server-only and are the
+   * only credentials in this file that can write to a public bucket. They must
+   * never be exposed to a client — the storefront reads image URLs from the
+   * database, so it needs no R2 credential at all.
+   */
+  R2_ACCOUNT_ID: z.string().min(1, 'Cloudflare account id is required'),
+  R2_ACCESS_KEY_ID: z.string().min(1),
+  R2_SECRET_ACCESS_KEY: z.string().min(1),
+  R2_BUCKET: z.string().default('product-images'),
+  /** Public base the bucket is served from, with no trailing slash. */
+  R2_PUBLIC_URL: z
+    .url()
+    .refine(v => !v.endsWith('/'), 'R2_PUBLIC_URL must not have a trailing slash'),
 
   /**
    * Honour cf-connect-ip / x-real-ip / x-forwarded-for for rate-limit keys.

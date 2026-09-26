@@ -52,6 +52,11 @@ CREATE TABLE IF NOT EXISTS "session" (
   "updatedAt"  timestamptz NOT NULL DEFAULT now(),
   "ipAddress"  text,
   "userAgent"  text,
+  -- Declared by the admin plugin's schema, alongside the user.role columns
+  -- above. Nullable and unused by this shop, but the migration should match
+  -- what the plugin declares rather than the subset this shop happens to read,
+  -- so the impersonate route does not fail on a missing column.
+  "impersonatedBy" text,
   "userId"     text        NOT NULL REFERENCES "user"("id") ON DELETE CASCADE
 );
 

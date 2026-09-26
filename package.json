@@ -27,6 +27,7 @@
     "bun": ">=1.2.0"
   },
   "dependencies": {
+    "@better-auth/infra": "^0.4.11",
     "vite": "^8.3.1"
   }
 }
