@@ -240,6 +240,16 @@
     color: white;
   }
 
+  /* A full-width pill for a footer column. The community invite and the
+     WhatsApp link are both this, so they are the same shape because they
+     share one rule — not because two components happen to repeat the same
+     three numbers, which is how they drift apart. */
+  .pill {
+    width: 100%;
+    font-size: 0.88rem;
+    padding: 0.6rem 1.1rem;
+  }
+
   /* An all-caps tracked label above every heading is the single loudest
      "generated page" tell. Our equivalent label is a small woven tag: it
      looks like a stitched-on label, not a typographic device. */

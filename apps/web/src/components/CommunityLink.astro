@@ -18,7 +18,8 @@ const href = communityUrl();
 ---
 
 <a
-  class="community btn-stitch"
+  class="community pill btn-stitch"
+  id="community-cta"
   href={href}
   target="_blank"
   rel="noopener noreferrer"
@@ -38,14 +39,8 @@ const href = communityUrl();
 </a>
 
 <style>
-  /* Unlayered, so it beats `.btn-stitch` in `@layer components` without
-     needing `!important` or a specificity fight. Only the metrics the
-     shared button does not already set are touched here. */
-  .community {
-    width: 100%;
-    font-size: 0.88rem;
-    padding: 0.6rem 1.1rem;
-  }
-
+  /* Size comes from the shared `.pill` rule in global.css, which the
+     WhatsApp link below it in the footer also uses. Only the icon needs
+     protecting from flex shrink. */
   .mark { flex-shrink: 0; }
 </style>

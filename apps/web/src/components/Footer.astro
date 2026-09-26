@@ -5,11 +5,42 @@
  */
 
 import CommunityLink from '@/components/CommunityLink.astro';
+import WhatsAppFooterLink from '@/components/WhatsAppFooterLink.astro';
 import { contact, communityUrl } from '@/lib/contact';
 import { FOOTER_SHOP_LINKS, SITE_INFORMATION_LINKS } from '@/lib/navigation';
 
 const year = new Date().getFullYear();
 ---
+
+<script>
+  /**
+   * Hand the corner over to the footer.
+   *
+   * When the footer comes into view the floating button would sit on top of
+   * the links it is meant to sit beside, so it stands down and the footer's
+   * own WhatsApp button — already the same size, already in the column —
+   * takes over. Scrolling back up reverses it.
+   *
+   * The trigger is the replacement button, not the footer. The footer is the
+   * last thing on the page and its height varies with the column count, so
+   * watching the footer means the handover lands at a different scroll
+   * position on every breakpoint. Watching the button that has to take over
+   * means the corner leaves exactly when its replacement arrives, and there
+   * is no dead zone where neither is on screen.
+   *
+   * One observer, one attribute, no geometry. The attribute is on <html> so
+   * both components can be styled from it regardless of where they sit in
+   * the document.
+   */
+  const handover = document.querySelector('.wa-footer');
+
+  if (handover) {
+    const observer = new IntersectionObserver(([entry]) => {
+      document.documentElement.toggleAttribute('data-footer-visible', entry.isIntersecting);
+    });
+    observer.observe(handover);
+  }
+</script>
 
 <footer class="site-footer">
   <div class="shell shell--wide footer-grid">
@@ -47,6 +78,14 @@ const year = new Date().getFullYear();
         and you see it before it reaches the shop.
       </p>
       <CommunityLink />
+      <!--
+        The floating button's counterpart. Same `.pill`, same column, so it is
+        the same width as the button above it at every breakpoint without
+        measuring anything. It is revealed when the footer is reached, at
+        which point the floating button stands down — so there is only ever
+        one WhatsApp button on screen.
+      -->
+      <WhatsAppFooterLink />
     </div>
   </div>
 
