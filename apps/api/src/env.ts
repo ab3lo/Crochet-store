@@ -23,9 +23,12 @@ const schema = z.object({
   SUPABASE_URL: z.url(),
 
   /**
-   * Server-only. The service-role key bypasses RLS and can write to the
+   * Server-only. An elevated key that bypasses RLS and can write to the
    * public image bucket, so it must never reach a client — the storefront
    * reads image URLs out of the database and needs no credential at all.
+   *
+   * Holds either the current `sb_secret_...` key or the deprecated
+   * `service_role` JWT; both are accepted and mean the same thing here.
    */
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
   SUPABASE_STORAGE_BUCKET: z.string().default('product-images'),
