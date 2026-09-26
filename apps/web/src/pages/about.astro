@@ -1,0 +1,143 @@
+---
+import Storefront from '@/layouts/Storefront.astro';
+import { getCatalogue } from '@/lib/api';
+
+const { banners } = await getCatalogue();
+---
+
+<Storefront
+  title="How it is made — Crochet & Co."
+  description="What crochet actually involves, why handmade crochet costs what it does, and what happens to a piece once it is finished."
+  banners={banners}
+>
+  <div class="shell shell--prose">
+    <header class="page-head">
+      <h1 class="page-title">How it is made</h1>
+      <p class="lede measure-wide">
+        Crochet is one continuous thread, worked with a single hook. There is no
+        knitting needle, no machine, and no seam unless I put one there. Everything
+        follows from that.
+      </p>
+    </header>
+
+    <div class="chain-rule" aria-hidden="true"></div>
+
+    <div class="prose">
+      <section>
+        <h2>What a round actually involves</h2>
+        <p>
+          A bag might be sixteen granny squares, and each square is four rounds of
+          turning, chaining and pulling through. A round ends with an increase —
+          working two stitches into one so the fabric stays flat instead of spiralling
+          in on itself. Miss the count on one round and the whole thing tapers. That
+          is the part nobody sees and everybody pays for.
+        </p>
+        <p>
+          I keep a count on a scrap of paper beside the work. Not because I cannot
+          remember, but because on round eleven of a square I should be thinking about
+          how the strap will look, not whether I put a stitch in at the corner.
+        </p>
+      </section>
+
+      <section>
+        <h2>Why there are no machines</h2>
+        <p>
+          Machine knitting can produce a bag quickly and cheaply. It cannot produce
+          this one: the slightly irregular tension where a colour changes, the place
+          where two squares meet and one is a little tighter than the other. Those are
+          not defects. They are the evidence that a person made it, and once you have
+          handled something made that way you find the machine version a bit flat.
+        </p>
+        <p>
+          Everything here is worked in runs of one to ten. That is not marketing, it
+          is arithmetic — there is only so much I can finish in a week alongside a
+          full-time job, and I would rather make fewer things properly.
+        </p>
+      </section>
+
+      <section>
+        <h2>Yarn, and why it matters</h2>
+        <p>
+          Cotton everywhere, almost always. Cotton takes a stitch crisply, does not
+          stretch when it is warm, and can be washed without a care label that
+          terrifies people. Raffia for the summer bags, because it holds a shape
+          beautifully and feels like the season it was made for.
+        </p>
+        <p>
+          Yarn is the largest single cost in anything I make, and the reason a
+          four-hour bag costs what it costs. I would rather tell you that than have
+          you wonder.
+        </p>
+      </section>
+
+      <section>
+        <h2>What happens when it is finished</h2>
+        <p>
+          Blocking, which is the part everybody skips: a short soak, pinned to shape,
+          and left to dry flat. It is what turns a slightly wonky pouch into something
+          that stands up on its own. Then a photo, a piece of tissue, and the post.
+        </p>
+        <p>
+          If something is not right when it arrives, tell me. I will repair it without
+          charge, always, and the yarn is often still in the basket.
+        </p>
+      </section>
+    </div>
+
+    <aside class="cta-block panel panel--blush">
+      <p class="cta-text">Anything here you would like in different colours?</p>
+      <a class="btn-stitch" href="/custom-orders">Start an enquiry</a>
+    </aside>
+  </div>
+</Storefront>
+
+<style>
+  .page-head { padding-block: 2.5rem 1.25rem; }
+
+  .page-title {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-section);
+    font-variation-settings: 'SOFT' 50, 'WONK' 1, 'opsz' 60;
+  }
+
+  .lede {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+  }
+
+  .prose { padding-block: 1.5rem; display: grid; gap: 2.25rem; }
+
+  .prose h2 {
+    margin: 0 0 0.6rem;
+    font-size: 1.35rem;
+    font-variation-settings: 'SOFT' 45, 'WONK' 1, 'opsz' 40;
+  }
+
+  .prose p {
+    margin: 0 0 0.9rem;
+    line-height: 1.7;
+    color: var(--color-ink-soft);
+  }
+
+  .prose p:last-child { margin-bottom: 0; }
+
+  .cta-block {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .cta-text {
+    margin: 0;
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 40, 'WONK' 1, 'opsz' 30;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+</style>

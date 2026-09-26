@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500" role="img" aria-label="No photograph yet">
+  <defs>
+  <filter id="g">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter></defs>
+  <rect width="400" height="500" fill="#F7DDE4"/>
+  <rect width="400" height="500" filter="url(#g)" opacity="0.05"/>
+  <g fill="none" stroke="#B25C82" stroke-width="3" stroke-linecap="round" opacity="0.6">
+    <path d="M2 470 Q50 400 100 470 Q150 400 200 470 Q250 400 300 470 Q350 400 398 470"/>
+  </g>
+  <text x="200" y="250" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#8A4A68">No photograph yet</text>
+</svg>

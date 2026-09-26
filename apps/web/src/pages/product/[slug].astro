@@ -1,0 +1,376 @@
+---
+/**
+ * Product page.
+ *
+ * Prerendered from the catalogue snapshot (or the live API at build time),
+ * with a JSON-LD block so the price and availability are machine readable.
+ */
+
+import Storefront from '@/layouts/Storefront.astro';
+import ProductGallery from '@/components/islands/ProductGallery.svelte';
+import AddToCart from '@/components/islands/AddToCart.svelte';
+import CatalogGrid from '@/components/islands/CatalogGrid.svelte';
+import BannerRenderer from '@/components/banners/BannerRenderer.svelte';
+import RegionNotice from '@/components/RegionNotice.astro';
+import { getCatalogue, productsIn, sortProducts } from '@/lib/api';
+import { jsonLd } from '@/lib/seo';
+import { CATEGORY_META, CURRENCY, SALES_REGION, amount, money, type Category } from '@crochet/shared';
+import { whatsappUrl } from '@/lib/contact';
+import { absolute } from '@/lib/config';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (async () => {
+  const { products } = await getCatalogue();
+  return products.map((product) => ({
+    params: { slug: product.slug },
+    props: { product },
+  }));
+}) satisfies GetStaticPaths;
+
+const { product } = Astro.props;
+const { products, banners } = await getCatalogue();
+
+const categoryMeta = CATEGORY_META.find((c) => c.id === (product.category as Category))!;
+
+// Only show the banner this product is actually part of.
+const ownBanner =
+  product.sale && banners.find((b) => b.id === product.sale!.bannerId && b.isLive)
+    ? banners.find((b) => b.id === product.sale!.bannerId)!
+    : null;
+
+/**
+ * A WhatsApp message about this specific piece, with its URL in it. Built at
+ * request time because the canonical origin is only known then — a hardcoded
+ * `https://example.com` in a message is a support ticket waiting to happen.
+ */
+const askUrl = whatsappUrl(
+  `Hello! I'd like to ask about the ${product.name}.\n\n${absolute(`/product/${product.slug}`)}\n\n${SALES_REGION.orderNote}`,
+);
+
+const related = sortProducts(
+  productsIn(products, product.category as Category).filter((p) => p.id !== product.id),
+).slice(0, 4);
+
+const details = Object.entries(product.details ?? {});
+
+// Product structured data. Price is bare, currency explicit, availability
+// mirrors stock — Google reads all three.
+const jsonLdData = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: product.name,
+  description: product.description || product.tagline,
+  image: product.images.length ? [product.images] : undefined,
+  category: categoryMeta.title,
+  sku: product.id,
+  offers: {
+    '@type': 'Offer',
+    price: amount(product.sale?.salePriceCents ?? product.priceCents),
+    priceCurrency: CURRENCY,
+    availability:
+      product.madeToOrder || product.stock > 0
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+  },
+};
+---
+
+<Storefront
+  title={`${product.name} — Crochet & Co.`}
+  description={product.tagline || product.description.slice(0, 150)}
+  image={product.images[0]}
+  banners={banners}
+>
+  <script type="application/ld+json" set:html={jsonLd(jsonLdData)} />
+
+  <div class="shell shell--content">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span aria-hidden="true">/</span>
+      <a href={categoryMeta.href}>{categoryMeta.title}</a>
+    </nav>
+
+    {
+      ownBanner && (
+        <div class="own-banner">
+          <BannerRenderer banner={ownBanner} compact />
+        </div>
+      )
+    }
+
+    <div class="product">
+      <div class="product-media">
+        <!-- client:idle so the thumbnails respond to a fast click. -->
+        <ProductGallery product={product} client:idle />
+      </div>
+
+      <div class="product-info">
+        <h1 class="product-title">{product.name}</h1>
+
+        {product.tagline && <p class="product-tagline">{product.tagline}</p>}
+
+        <div class="price-row">
+          <span class="price price--big">
+            {money(product.sale?.salePriceCents ?? product.priceCents)}
+          </span>
+
+          {
+            product.sale && (
+              <>
+                <span class="price-was">{money(product.priceCents)}</span>
+                <span class="save-pill">{product.sale.percentOff}% off</span>
+              </>
+            )
+          }
+
+          {
+            !product.sale && product.compareAtCents && product.compareAtCents > product.priceCents && (
+              <span class="price-was">{money(product.compareAtCents)}</span>
+            )
+          }
+        </div>
+
+        {
+          product.sale?.code && (
+            <p class="code-line">
+              Use <code>{product.sale.code}</code> at checkout.
+            </p>
+          )
+        }
+
+        <div class="stock-line">
+          {
+            product.madeToOrder ? (
+              <span>Made to order. Two to three weeks, depending on the queue.</span>
+            ) : product.stock > 0 ? (
+              <span>
+                {product.stock <= 3
+                  ? `Only ${product.stock} left — each takes a while to remake.`
+                  : `${product.stock} on the shelf, ready to post.`}
+              </span>
+            ) : (
+              <span class="out">Back in the basket soon. Leave a custom order below if it is urgent.</span>
+            )
+          }
+        </div>
+
+        <AddToCart product={product} client:load />
+
+        <div class="region-slot">
+          <RegionNotice />
+        </div>
+
+        <a
+          class="ask"
+          href={askUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24"
+            ></path>
+          </svg>
+          Ask about this piece on WhatsApp
+        </a>
+
+        {
+          product.description && (
+            <div class="description">
+              {product.description.split('\n\n').map((para) => <p>{para}</p>)}
+            </div>
+          )
+        }
+
+        {
+          details.length > 0 && (
+            <details class="specs" open>
+              <summary>Details and care</summary>
+              <dl>
+                {details.map(([key, value]) => (
+                  <>
+                    <dt>{key}</dt>
+                    <dd>{value}</dd>
+                  </>
+                ))}
+              </dl>
+            </details>
+          )
+        }
+      </div>
+    </div>
+
+    {
+      related.length > 0 && (
+        <section class="related" aria-labelledby="related-heading">
+          <div class="section-head">
+            <h2 id="related-heading">More {categoryMeta.title.toLowerCase()}</h2>
+            <a href={categoryMeta.href}>See all</a>
+          </div>
+          <div class="chain-rule chain-rule--tight" aria-hidden="true" />
+          <CatalogGrid products={related} client:idle />
+        </section>
+      )
+    }
+  </div>
+</Storefront>
+
+<style>
+  .crumbs {
+    display: flex;
+    gap: 0.5rem;
+    padding-block: 1.25rem 0.5rem;
+    font-size: 0.82rem;
+    color: var(--color-ink-faint);
+  }
+
+  .crumbs a { color: var(--color-ink-soft); text-decoration: none; }
+  .crumbs a:hover { color: var(--color-rose-deep); text-decoration: underline; }
+
+  .own-banner { margin-block: 0.5rem 1.5rem; }
+
+  .product {
+    display: grid;
+    gap: 2rem;
+    padding-block: 1rem 2rem;
+  }
+
+  @media (min-width: 900px) {
+    .product { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; }
+    .product-media { position: sticky; top: 5rem; align-self: start; }
+  }
+
+  .product-title {
+    margin: 0 0 0.35rem;
+    font-size: var(--text-section);
+    font-variation-settings: 'SOFT' 50, 'WONK' 1, 'opsz' 60;
+  }
+
+  .product-tagline {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: var(--color-ink-soft);
+  }
+
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .price--big { font-size: 1.9rem; }
+
+  .save-pill {
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.3rem;
+    background: var(--color-rose-deep);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .code-line { margin: 0 0 1rem; font-size: 0.9rem; color: var(--color-ink-soft); }
+
+  .code-line code {
+    padding: 0.1rem 0.4rem;
+    border: 1.5px dashed var(--color-rose-deep);
+    border-radius: 0.3rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-rose-deep);
+  }
+
+  .stock-line {
+    margin: 0 0 1.5rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.5rem;
+    background: color-mix(in oklab, var(--color-blush) 34%, var(--color-paper));
+    font-size: 0.88rem;
+    color: var(--color-ink-soft);
+  }
+
+  .out { color: #a33a26; }
+
+  .description {
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1.5px solid color-mix(in oklab, var(--color-rose) 20%, transparent);
+  }
+
+  .region-slot { margin-top: 1.5rem; }
+
+  /* Asking before buying is the main path for this shop, so it sits directly
+     under the region notice rather than being buried in the footer. */
+  .ask {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.9rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-rose-deep);
+    background: transparent;
+    color: var(--color-rose-deep);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 130ms ease, color 130ms ease;
+  }
+
+  .ask:hover {
+    background: var(--color-rose-deep);
+    color: #fff;
+  }
+
+  .description p {
+    margin: 0;
+    line-height: 1.68;
+    color: var(--color-ink-soft);
+    max-width: 40rem;
+  }
+
+  .specs { margin-top: 1.5rem; }
+
+  .specs summary {
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 40, 'WONK' 1, 'opsz' 24;
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding-block: 0.5rem;
+  }
+
+  .specs summary:hover { color: var(--color-rose-deep); }
+
+  .specs dl {
+    display: grid;
+    grid-template-columns: minmax(8rem, auto) 1fr;
+    gap: 0.4rem 1.25rem;
+    margin: 0.75rem 0 0;
+    font-size: 0.9rem;
+  }
+
+  .specs dt { color: var(--color-ink-faint); }
+
+  .specs dd { margin: 0; color: var(--color-ink); }
+
+  .related { padding-block: 2.5rem 1rem; }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-head h2 { margin: 0; font-size: 1.4rem; }
+  .section-head a { font-size: 0.88rem; color: var(--color-rose-deep); text-underline-offset: 3px; }
+</style>

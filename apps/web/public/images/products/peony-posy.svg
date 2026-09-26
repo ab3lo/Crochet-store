@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500" role="img" aria-label="Peony posy">
+  <defs>
+  <filter id="g">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+    <linearGradient id="wash" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#E9F0E4"/>
+      <stop offset="100%" stop-color="#fff"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    /* System stack: these are placeholders, not a font delivery mechanism. */
+    .lbl { font-family: Georgia, 'Times New Roman', serif; font-size: 21px; fill: #5E7F55; }
+    .cat { font-family: system-ui, sans-serif; font-size: 11px; letter-spacing: 2.4px;
+           text-transform: uppercase; fill: #5E7F55; opacity: 0.6; }
+  </style>
+
+  <rect width="400" height="500" fill="url(#wash)"/>
+  <rect width="400" height="500" filter="url(#g)" opacity="0.05"/>
+
+  <!-- A puff-stitch scallop along the bottom, the same motif the site uses. -->
+  <path d="M0 500 a10 12 0 0 1 20 0 M20 500 a10 12 0 0 1 20 0 M40 500 a10 12 0 0 1 20 0 M60 500 a10 12 0 0 1 20 0 M80 500 a10 12 0 0 1 20 0 M100 500 a10 12 0 0 1 20 0 M120 500 a10 12 0 0 1 20 0 M140 500 a10 12 0 0 1 20 0 M160 500 a10 12 0 0 1 20 0 M180 500 a10 12 0 0 1 20 0 M200 500 a10 12 0 0 1 20 0 M220 500 a10 12 0 0 1 20 0 M240 500 a10 12 0 0 1 20 0 M260 500 a10 12 0 0 1 20 0 M280 500 a10 12 0 0 1 20 0 M300 500 a10 12 0 0 1 20 0 M320 500 a10 12 0 0 1 20 0 M340 500 a10 12 0 0 1 20 0 M360 500 a10 12 0 0 1 20 0 M380 500 a10 12 0 0 1 20 0" fill="none" stroke="#5E7F55" stroke-width="2" opacity="0.35"/>
+
+  
+    <g fill="none" stroke="#5E7F55" stroke-width="3" stroke-linecap="round">
+      <ellipse cx="234.0" cy="232.0" rx="15" ry="24" transform="rotate(0 234.0 232.0)" />
+      <ellipse cx="217.0" cy="261.4" rx="15" ry="24" transform="rotate(60 217.0 261.4)" />
+      <ellipse cx="183.0" cy="261.4" rx="15" ry="24" transform="rotate(120 183.0 261.4)" />
+      <ellipse cx="166.0" cy="232.0" rx="15" ry="24" transform="rotate(180 166.0 232.0)" />
+      <ellipse cx="183.0" cy="202.6" rx="15" ry="24" transform="rotate(240 183.0 202.6)" />
+      <ellipse cx="217.0" cy="202.6" rx="15" ry="24" transform="rotate(300 217.0 202.6)" />
+      <circle cx="200" cy="232" r="13" />
+    </g>
+
+  <g>
+      <text x="200" y="404" text-anchor="middle" class="lbl">Peony posy</text>
+      <text x="200" y="442" text-anchor="middle" class="cat">bouquets</text>
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+{
+  "name": "crochet-store",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd apps/web dev",
+    "dev:api": "bun run --cwd apps/api dev",
+    "build": "bun run --cwd apps/web build",
+    "preview": "bun run --cwd apps/web preview",
+    "dev:offline": "bun run --cwd apps/web dev:demo",
+    "build:offline": "bun run --cwd apps/web build:offline",
+    "theme": "bun run --cwd apps/web theme",
+    "snapshot": "bun run --cwd apps/web snapshot",
+    "placeholders": "bun run --cwd apps/web placeholders",
+    "seed": "bun run --cwd apps/api seed",
+    "create-admin": "bun run --cwd apps/api create-admin",
+    "db:migrate": "bun run --cwd apps/api db:migrate",
+    "typecheck": "bun run --cwd apps/api typecheck",
+    "scan:dead": "bun scripts/scan-dead.ts"
+  },
+  "engines": {
+    "bun": ">=1.2.0"
+  },
+  "dependencies": {
+    "vite": "^8.3.1"
+  }
+}

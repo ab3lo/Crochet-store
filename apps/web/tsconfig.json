@@ -1,0 +1,14 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*.ts", "**/*.svelte", "**/*.astro"],
+  "exclude": ["dist", "node_modules"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@crochet/shared": ["../../shared/src/index.ts"]
+    },
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true
+  }
+}

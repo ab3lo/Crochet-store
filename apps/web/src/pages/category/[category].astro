@@ -1,0 +1,127 @@
+---
+/**
+ * Category page. One route, five categories — a bespoke page per category
+ * would be five near-identical files.
+ */
+
+import Storefront from '@/layouts/Storefront.astro';
+import CatalogGrid from '@/components/islands/CatalogGrid.svelte';
+import { getCatalogue, productsIn, onSaleProducts } from '@/lib/api';
+import { CATEGORY_META, type Category, CATEGORIES } from '@crochet/shared';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (() =>
+  CATEGORIES.filter((c) => c !== 'custom').map((category) => ({
+    params: { category },
+    props: { category },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props as Props;
+
+const meta = CATEGORY_META.find((c) => c.id === category)!;
+const { products, banners } = await getCatalogue();
+
+const inCategory = productsIn(products, category);
+const reduced = onSaleProducts(inCategory);
+const others = CATEGORY_META.filter((c) => c.id !== category && c.id !== 'custom');
+---
+
+<Storefront
+  title={`${meta.title} — Crochet & Co.`}
+  description={meta.blurb}
+  banners={banners}
+>
+  <div class="shell shell--content">
+    <header class="page-head">
+      <span class="tag">{inCategory.length} in this basket</span>
+      <h1 class="page-title">{meta.title}</h1>
+      <p class="page-blurb measure">{meta.blurb}</p>
+    </header>
+
+    <div class="chain-rule" aria-hidden="true"></div>
+
+    {reduced.length > 0 && (
+      <p class="reduced-note">
+        {reduced.length} of these {reduced.length === 1 ? 'is' : 'are'} reduced right now.
+        <a href="?sale=1">Show only those</a>
+      </p>
+    )}
+
+    <CatalogGrid products={inCategory} lockedCategory={category} client:load />
+  </div>
+
+  <nav class="shell shell--content others" aria-label="Other categories">
+    <p class="others-label">Look at something else</p>
+    <ul>
+      {
+        others.map((cat) => (
+          <li>
+            <a href={cat.href}>{cat.title}</a>
+          </li>
+        ))
+      }
+      <li><a href="/custom-orders">Custom orders</a></li>
+    </ul>
+  </nav>
+</Storefront>
+
+<style>
+  .page-head { padding-block: 2.5rem 1.25rem; max-width: 38rem; }
+
+  .page-title {
+    margin: 0.7rem 0 0.5rem;
+    font-size: var(--text-section);
+    font-variation-settings: 'SOFT' 50, 'WONK' 1, 'opsz' 60;
+  }
+
+  .page-blurb { margin: 0; font-size: 1.05rem; line-height: 1.6; color: var(--color-ink-soft); }
+
+  .reduced-note {
+    margin: 1rem 0 0;
+    font-size: 0.88rem;
+    color: var(--color-ink-soft);
+  }
+
+  .reduced-note a { color: var(--color-rose-deep); text-underline-offset: 3px; }
+
+  .others {
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1.5px solid color-mix(in oklab, var(--color-rose) 20%, transparent);
+  }
+
+  .others-label {
+    margin: 0 0 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-ink-faint);
+  }
+
+  .others ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .others a {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: 1.5px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+    font-size: 0.85rem;
+    color: var(--color-ink-soft);
+    text-decoration: none;
+  }
+
+  .others a:hover {
+    border-color: var(--color-rose);
+    color: var(--color-ink);
+  }
+</style>

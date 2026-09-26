@@ -1,0 +1,39 @@
+# Cloudflare Pages / Netlify header rules.
+#
+# Cloudflare Pages picks this up automatically. GitHub Pages does NOT support
+# custom headers — see the README for how to reproduce these there.
+
+/*
+  # The site is a static, self-contained bundle. Nothing is loaded from
+  # another origin except product images from the Supabase CDN, which is
+  # why `img-src` allows https:.
+  #
+  # 'unsafe-inline' for style-src is required because Svelte scopes component
+  # CSS by injecting a <style> tag at runtime. 'unsafe-inline' is NOT allowed
+  # for script-src, which is the one that matters for XSS.
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https:; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+
+# Hashed build assets never change under the same name.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML must revalidate, or a deploy would never reach anyone.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/images/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Never let a CDN cache the admin shell.
+/admin/*
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow

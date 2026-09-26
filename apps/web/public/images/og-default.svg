@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <filter id="g">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <linearGradient id="wash" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FDE9EE"/>
+      <stop offset="100%" stop-color="#F7CCD8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#wash)"/>
+  <rect width="1200" height="630" filter="url(#g)" opacity="0.04"/>
+
+  <!-- chain rule across the top -->
+  <path d="${''}" fill="none"/>
+  <g fill="none" stroke="#D98BA6" stroke-width="3" stroke-linecap="round" opacity="0.5">
+    <path d="M0 34 Q30 -2 60 34 Q90 70 120 34 Q150 -2 180 34 Q210 70 240 34 Q270 -2 300 34
+             Q330 70 360 34 Q390 -2 420 34 Q450 70 480 34 Q510 -2 540 34 Q570 70 600 34
+             Q630 -2 660 34 Q690 70 720 34 Q750 -2 780 34 Q810 70 840 34 Q870 -2 900 34
+             Q930 70 960 34 Q990 -2 1020 34 Q1050 70 1080 34 Q1110 -2 1140 34 Q1170 70 1200 34"/>
+  </g>
+
+  <!-- the mark, oversized -->
+  <g transform="translate(430 130) scale(1.7)">
+    <path d="M2 100 Q40 20 80 100 Q120 180 160 100" fill="none" stroke="#B25C82" stroke-width="9" stroke-linecap="round"/>
+    <path d="M2 70 Q40 -10 80 70 Q120 150 160 70" fill="none" stroke="#B25C82" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+  </g>
+
+  <text x="600" y="430" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="76" fill="#4A2338">Crochet &amp; Co.</text>
+  <text x="600" y="492" text-anchor="middle" font-family="system-ui, sans-serif" font-size="25" letter-spacing="1.5" fill="#6B3B52">Handmade crochet, worked one at a time</text>
+
+  <g fill="none" stroke="#D98BA6" stroke-width="3" stroke-linecap="round" opacity="0.5">
+    <path d="M0 596 Q30 560 60 596 Q90 632 120 596 Q150 560 180 596 Q210 632 240 596
+             Q270 560 300 596 Q330 632 360 596 Q390 560 420 596 Q450 632 480 596
+             Q510 560 540 596 Q570 632 600 596 Q630 560 660 596 Q690 632 720 596
+             Q750 560 780 596 Q810 632 840 596 Q870 560 900 596 Q930 632 960 596
+             Q990 560 1020 596 Q1050 632 1080 596 Q1110 560 1140 596 Q1170 632 1200 596"/>
+  </g>
+</svg>

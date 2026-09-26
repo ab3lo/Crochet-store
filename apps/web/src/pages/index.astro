@@ -1,0 +1,283 @@
+---
+import Storefront from '@/layouts/Storefront.astro';
+import HeroYarn from '@/components/HeroYarn.astro';
+import CatalogGrid from '@/components/islands/CatalogGrid.svelte';
+import { getCatalogue, onSaleProducts, sortProducts, snapshotAge } from '@/lib/api';
+import { CATEGORY_META, money } from '@crochet/shared';
+
+const { products, banners, source } = await getCatalogue();
+
+const featured = sortProducts(products).slice(0, 8);
+const reduced = onSaleProducts(products).slice(0, 4);
+
+const description =
+  'Handmade crochet keychains, bags, purses and never-wilt flowers, worked one at a time in small numbers.';
+
+// Only advertise a category that actually has something in it.
+const stocked = CATEGORY_META.filter((c) =>
+  c.id === 'custom' ? true : products.some((p) => p.category === c.id),
+);
+---
+
+<Storefront
+  title="Crochet & Co. — handmade crochet, worked one stitch at a time"
+  description={description}
+  banners={banners}
+>
+  <HeroYarn
+    sub="Keychains, bags, purses and flowers that will not wilt. Made in small numbers, on a hook, by one person with too many baskets of yarn."
+  />
+
+  <section class="section shell" aria-labelledby="shelf-heading">
+    <div class="section-head">
+      <h2 id="shelf-heading" class="section-title">What is on the shelf</h2>
+      <a class="section-link" href="/category/keychains">See everything</a>
+    </div>
+
+    <div class="chain-rule" aria-hidden="true"></div>
+
+    <CatalogGrid products={featured} client:load />
+  </section>
+
+  {
+    reduced.length > 0 && (
+      <section class="section reduced-band" aria-labelledby="reduced-heading">
+        <div class="shell shell--content">
+          <div class="section-head">
+            <h2 id="reduced-heading" class="section-title">Reduced this week</h2>
+            <p class="section-note">Prices go back up when the basket empties.</p>
+          </div>
+
+          <div class="chain-rule chain-rule--tight" aria-hidden="true" />
+
+          <ul class="reduced-grid">
+            {reduced.map((product) => (
+              <li>
+                <a class="reduced-card" href={`/product/${product.slug}`}>
+                  <img
+                    src={product.images[0] ?? '/images/placeholder.svg'}
+                    alt=""
+                    width="200"
+                    height="200"
+                    loading="lazy"
+                  />
+                  <div>
+                    <p class="reduced-name">{product.name}</p>
+                    <p class="reduced-price">
+                      {product.sale && <span class="price-was">{money(product.priceCents)}</span>}
+                      <span class="price">
+                        {money(product.sale?.salePriceCents ?? product.priceCents)}
+                      </span>
+                    </p>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section shell" aria-labelledby="cats-heading">
+    <div class="section-head">
+      <h2 id="cats-heading" class="section-title">By kind</h2>
+    </div>
+
+    <div class="chain-rule" aria-hidden="true"></div>
+
+    <ul class="cat-grid">
+      {
+        stocked.map((cat) => (
+          <li>
+            <a class="cat-card" href={cat.href}>
+              <span class="cat-title">{cat.title}</span>
+              <span class="cat-blurb">{cat.blurb}</span>
+              <span class="cat-count">
+                {cat.id === 'custom'
+                  ? 'Enquiries open'
+                  : `${products.filter((p) => p.category === cat.id).length} pieces`}
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="section shell">
+    <div class="make panel panel--blush">
+      <div class="make-copy">
+        <h2 class="section-title">Why it costs what it costs</h2>
+        <p class="measure">
+          A crochet bag is not a faster version of a knitted one. It is hundreds of
+          small decisions made by hand, and the parts you do not see — the lining, the
+          hidden seams, the row of counting at the end of every round — are the parts
+          that decide whether it lasts.
+        </p>
+        <p class="measure">
+          Everything here is made in runs of one to ten, so nothing is identical and
+          nothing sits in a warehouse. That is the whole idea.
+        </p>
+        <a class="btn-stitch btn-stitch--ghost" href="/about">Read how it is made</a>
+      </div>
+    </div>
+  </section>
+
+  {
+    source !== 'api' && (
+      <p class="shell shell--content source-note">
+        {source === 'empty'
+          ? 'The catalogue is empty — run the seed script to populate it.'
+          : `Showing the catalogue snapshot from ${new Date(
+              snapshotAge,
+            ).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })} — the API was not reachable when this page was built. Publish something in the admin to refresh it.`}
+      </p>
+    )
+  }
+</Storefront>
+
+<style>
+  .section { padding-block: 3rem; }
+
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    margin: 0;
+    font-size: var(--text-section);
+    font-variation-settings: 'SOFT' 45, 'WONK' 1, 'opsz' 60;
+  }
+
+  .section-link {
+    font-size: 0.9rem;
+    color: var(--color-rose-deep);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .section-note { margin: 0; font-size: 0.85rem; color: var(--color-ink-faint); }
+
+  /* ── Reduced band ──────────────────────────────────────────────── */
+
+  .reduced-band {
+    background: color-mix(in oklab, var(--color-blush) 30%, var(--color-shell));
+    border-block: 1.5px solid color-mix(in oklab, var(--color-rose) 20%, transparent);
+  }
+
+  .reduced-grid {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  }
+
+  .reduced-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.7rem;
+    background: var(--color-paper);
+    border: 1.5px solid color-mix(in oklab, var(--color-rose) 24%, transparent);
+    border-radius: var(--radius-card);
+    text-decoration: none;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+  }
+
+  .reduced-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 3px 3px 0 color-mix(in oklab, var(--color-rose) 30%, transparent);
+  }
+
+  .reduced-card img {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    background: var(--color-blush);
+  }
+
+  .reduced-name {
+    margin: 0 0 0.15rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .reduced-price { margin: 0; display: flex; align-items: baseline; gap: 0.4rem; }
+
+  /* ── Categories ────────────────────────────────────────────────── */
+
+  .cat-grid {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .cat-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .cat-card {
+    display: grid;
+    gap: 0.3rem;
+    height: 100%;
+    padding: 1.25rem;
+    background: var(--color-paper);
+    border: 1.5px solid color-mix(in oklab, var(--color-rose) 24%, transparent);
+    border-radius: var(--radius-card);
+    text-decoration: none;
+    transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+  }
+
+  .cat-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 color-mix(in oklab, var(--color-rose) 30%, transparent);
+    background: color-mix(in oklab, var(--color-blush) 30%, var(--color-paper));
+  }
+
+  .cat-title {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 45, 'WONK' 1, 'opsz' 30;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .cat-blurb { font-size: 0.9rem; line-height: 1.5; color: var(--color-ink-soft); }
+
+  .cat-count {
+    margin-top: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--color-ink-faint);
+  }
+
+  /* ── Make block ────────────────────────────────────────────────── */
+
+  .make {
+    display: grid;
+    gap: 1rem;
+    padding: 2rem;
+  }
+
+  @media (min-width: 860px) { .make { padding: 2.75rem 3rem; } }
+
+  .make-copy { display: grid; gap: 1rem; justify-items: start; }
+  .make-copy p { margin: 0; line-height: 1.65; color: var(--color-ink-soft); }
+
+  .source-note {
+    padding-top: 1rem;
+    font-size: 0.78rem;
+    color: var(--color-ink-faint);
+  }
+</style>

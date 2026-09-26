@@ -1,0 +1,176 @@
+---
+import Storefront from '@/layouts/Storefront.astro';
+import Inquiry from '@/components/islands/Inquiry.svelte';
+import { getCatalogue } from '@/lib/api';
+import { contact, communityUrl } from '@/lib/contact';
+
+const { banners } = await getCatalogue();
+
+const STEPS = [
+  {
+    title: 'Tell me what you want',
+    body: 'Colours, size, roughly what it is for, and when you need it. A screenshot of an outfit or a wedding scheme works better than a description.',
+  },
+  {
+    title: 'I come back with options',
+    body: 'Within two days, with yarn suggestions, a price and an honest note about whether I can make it in the time you have.',
+  },
+  {
+    title: 'You approve, I start',
+    body: 'A third of the price holds your place in the queue. Nothing is started until you have said yes.',
+  },
+  {
+    title: 'It gets posted',
+    body: 'Photographed before it leaves, wrapped in tissue, and in the post within a day or two of finishing.',
+  },
+];
+---
+
+<Storefront
+  title="Custom orders — Crochet & Co."
+  description="Commission a bespoke crochet piece in your own colours and size. Tell me what you have in mind and I will come back with options."
+  banners={banners}
+>
+  <div class="shell shell--content">
+    <header class="page-head">
+      <span class="tag">Enquiries are open</span>
+      <h1 class="page-title">Commission something</h1>
+      <p class="page-blurb measure-wide">
+        Most of what I make started as somebody asking for a colour that was not in
+        stock. If you can describe it, I can usually work out how to crochet it — and
+        if I cannot, I will tell you straight away rather than take your deposit.
+      </p>
+    </header>
+
+    <div class="chain-rule" aria-hidden="true"></div>
+
+    <section class="steps" aria-labelledby="steps-heading">
+      <h2 id="steps-heading" class="steps-title">How a commission runs</h2>
+
+      <ol class="steps-list">
+        {
+          STEPS.map((step) => (
+            <li class="step">
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="enquiry" aria-labelledby="enquiry-heading">
+      <div class="enquiry-copy">
+        <h2 id="enquiry-heading" class="steps-title">Start an enquiry</h2>
+        <p class="measure">
+          There is no form to fill in. Everything goes through WhatsApp, because
+          that is where I read messages and where I can actually show you the yarn
+          colours and answer a question without a two-day turnaround.
+        </p>
+        <p class="measure">
+          Tap whatever applies, add your own words if you want, and it opens
+          WhatsApp with the whole thing written out. Want to see how a piece
+          comes together before you commit to one?{' '}
+          <a href={communityUrl()} target="_blank" rel="noopener noreferrer">
+            {contact.communityName}
+          </a> has the work in progress, photographed as it goes.
+        </p>
+        <p class="turnaround measure">
+          <span class="tag">Two to three weeks</span>
+          <span>typical lead time for a bespoke piece. Rush orders are sometimes possible — ask.</span>
+        </p>
+      </div>
+
+      <!--
+        client:idle, not client:visible. `visible` hydrates on
+        scroll-into-view, so a shopper who scrolls and clicks immediately
+        lands on a dead control — the click is swallowed because there is no
+        handler yet. Every island here is something you can click, so they
+        all wait for the main thread to be free instead. At this bundle size
+        the cost is a few milliseconds of earlier hydration.
+      -->
+      <Inquiry client:idle title="Tell me what you have in mind" />
+    </section>
+  </div>
+</Storefront>
+
+<style>
+  .page-head { padding-block: 2.5rem 1.25rem; }
+
+  .page-title {
+    margin: 0.7rem 0 0.75rem;
+    font-size: var(--text-section);
+    font-variation-settings: 'SOFT' 50, 'WONK' 1, 'opsz' 60;
+  }
+
+  .page-blurb {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--color-ink-soft);
+  }
+
+  .page-blurb a { color: var(--color-rose-deep); }
+
+  .steps { padding-block: 2rem; }
+
+  .steps-title {
+    margin: 0 0 1.25rem;
+    font-size: 1.5rem;
+    font-variation-settings: 'SOFT' 45, 'WONK' 1, 'opsz' 40;
+  }
+
+  /* A numbered list is right here because this genuinely is a sequence —
+     one of the few cases where numbering carries information. */
+  .steps-list {
+    list-style: none;
+    counter-reset: step;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 760px) { .steps-list { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1080px) { .steps-list { grid-template-columns: repeat(4, 1fr); } }
+
+  .step { counter-increment: step; }
+
+  .step h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  /* The number is part of the step, not decoration on top of it. */
+  .step h3::before {
+    content: counter(step);
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-rose-deep);
+    background: color-mix(in oklab, var(--color-blush) 80%, transparent);
+    border-radius: 0.3rem;
+    padding: 0.1rem 0.4rem;
+  }
+
+  .step p { margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--color-ink-soft); }
+
+  .enquiry {
+    display: grid;
+    gap: 2rem;
+    padding-block: 2rem 1rem;
+  }
+
+  @media (min-width: 900px) { .enquiry { grid-template-columns: 1fr 1.3fr; gap: 3rem; } }
+
+  .enquiry-copy p { margin: 0 0 1rem; line-height: 1.65; color: var(--color-ink-soft); }
+  .enquiry-copy a { color: var(--color-rose-deep); text-underline-offset: 3px; }
+
+  .turnaround { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; font-size: 0.88rem; }
+
+
+</style>

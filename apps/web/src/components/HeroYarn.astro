@@ -1,0 +1,165 @@
+---
+/**
+ * Hero.
+ *
+ * The one memorable thing on the site: a ball of yarn with a thread coming
+ * off it, and that thread becomes the underline beneath the headline.
+ *
+ * The thread is a drawn SVG path rather than a static asset, so it scales
+ * with the headline and the draw-on animation can be timed to land as the
+ * text finishes arriving. Everything else here is deliberately plain.
+ */
+
+interface Props {
+  sub: string;
+}
+
+const { sub } = Astro.props;
+
+const year = new Date().getFullYear();
+---
+
+<section class="hero">
+  <div class="shell shell--content hero-grid">
+    <div class="hero-copy hero-reveal">
+      <span class="tag">Hand-worked, one at a time</span>
+
+      <h1 class="hero-title">
+        Crochet, stitch by stitch, <span class="hero-em">in {year}</span>
+      </h1>
+
+      <p class="hero-sub measure">{sub}</p>
+
+      <div class="hero-actions">
+        <a class="btn-stitch" href="/category/keychains">Start with the small things</a>
+        <a class="btn-stitch btn-stitch--ghost" href="/custom-orders">Commission a piece</a>
+      </div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 300 300" width="100%" class="yarn">
+        <defs>
+          {/* Everything meant to look like it is on or in the ball is
+              clipped to the ball. Without this the wraps read as whiskers. */}
+          <clipPath id="ball-clip">
+            <circle cx="130" cy="155" r="66" />
+          </clipPath>
+        </defs>
+
+        <!-- The ball. -->
+        <circle
+          cx="130"
+          cy="155"
+          r="66"
+          fill="var(--color-blush)"
+          stroke="var(--color-rose-deep)"
+          stroke-width="2.5"></circle>
+
+        <!-- Winding, clipped to the surface. -->
+        <g clip-path="url(#ball-clip)" fill="none" stroke="var(--color-rose)" stroke-linecap="round">
+          <path d="M64 138 Q130 108 196 138" stroke-width="2" opacity="0.5" />
+          <path d="M64 160 Q130 130 196 160" stroke-width="2" opacity="0.45" />
+          <path d="M64 182 Q130 152 196 182" stroke-width="2" opacity="0.4" />
+          <path d="M104 84 Q78 155 104 226" stroke-width="1.8" opacity="0.38" />
+          <path d="M156 84 Q182 155 156 226" stroke-width="1.8" opacity="0.38" />
+
+          <!-- The wrap that comes off the ball. Same arc family as the ones
+               above it, but darker, and it stops dead at the point where the
+               thread below begins — so the two read as one piece of yarn. -->
+          <path
+            d="M68 162 Q140 130 196 148"
+            stroke="var(--color-rose-deep)"
+            stroke-width="2.4"
+            opacity="0.85"
+          />
+        </g>
+
+        <!-- The crochet hook, resting against the ball. -->
+        <g
+          class="hook"
+          fill="none"
+          stroke="var(--color-ink)"
+          stroke-width="4.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <!-- shaft, running down-left toward the ball -->
+          <path d="M262 58 L214 106" />
+          <!-- throat and tip, curling back toward the thread -->
+          <path d="M214 106 C203 117 204 130 215 132 C223 133 228 127 225 120" />
+        </g>
+
+        <!-- The thread: off the hook tip, onto the ball, then unspooling
+             into two loose coils and a tail. It never crosses the ball. -->
+        <path
+          class="thread thread-draw"
+          pathLength="100"
+          d="M225 120 C208 130 200 140 196 148
+             C214 142 236 154 240 174
+             C244 194 224 208 206 200
+             C190 192 194 168 214 168
+             C234 168 244 190 236 212
+             C228 234 200 238 186 224"
+          fill="none"
+          stroke="var(--color-rose-deep)"
+          stroke-width="2.6"
+          stroke-linecap="round"
+        />
+      </svg>
+    </div>
+  </div>
+
+  <div class="shell shell--content puff-edge" aria-hidden="true"></div>
+</section>
+
+<style>
+  .hero { position: relative; padding-top: 3rem; }
+
+  .hero-grid {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+    padding-bottom: 2.5rem;
+  }
+
+  @media (min-width: 900px) {
+    .hero { padding-top: 4.5rem; }
+    .hero-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
+  }
+
+  .hero-copy { max-width: 36rem; }
+
+  .hero-title {
+    margin: 0.9rem 0 1rem;
+    font-size: var(--text-hero);
+    line-height: var(--text-hero--line-height);
+    letter-spacing: var(--text-hero--letter-spacing);
+    /* Fraunces turned all the way to SOFT and WONK. This is the parameter
+       that makes the headline read handmade rather than editorial. */
+    font-variation-settings: 'SOFT' 60, 'WONK' 1, 'opsz' 100;
+    font-weight: 500;
+  }
+
+  /* One italicised clause inside the headline. A single deliberate
+     accent, not a random bolded word. */
+  .hero-em {
+    font-style: italic;
+    color: var(--color-rose-deep);
+  }
+
+  .hero-sub {
+    font-size: 1.08rem;
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+    margin: 0 0 1.5rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .hero-art { max-width: 22rem; margin-inline: auto; }
+  .yarn { display: block; overflow: visible; }
+</style>

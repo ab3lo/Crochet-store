@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# The admin panel has its own noindex, but say it here too.
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://crochet-and-co.pages.dev/sitemap-index.xml

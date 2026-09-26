@@ -1,0 +1,204 @@
+---
+import Storefront from '@/layouts/Storefront.astro';
+import RegionNotice from '@/components/RegionNotice.astro';
+import { getCatalogue } from '@/lib/api';
+import { SALES_REGION } from '@crochet/shared';
+import { whatsappUrl } from '@/lib/contact';
+
+const { banners } = await getCatalogue();
+
+const FAQ = [
+  {
+    q: 'Do you post anywhere?',
+    a: `No. The shop is in ${SALES_REGION.city} and everything is made to order or finished to order, so sending a small crocheted keychain across the country costs more than it is worth and takes longer than making another one. Collection or local delivery inside ${SALES_REGION.city} only.`,
+  },
+  {
+    q: 'How do I collect?',
+    a: `Message me on WhatsApp and we will agree a day and a time. There is no fixed opening hours — it is one person and a basket of yarn, so half-day notice is plenty and a whole week in advance is fine too.`,
+  },
+  {
+    q: 'What about local delivery?',
+    a: `Possible for anything larger than a keychain, inside ${SALES_REGION.city} and the immediate surroundings. Message me your area and the size of the piece and I will tell you honestly whether it is worth doing and what it would cost.`,
+  },
+  {
+    q: 'Can I pay online?',
+    a: `Not on the site. You place an order by WhatsApp and I send you a payment link for the exact amount. That keeps your card details off this site entirely, and it means you can talk to a person before paying for anything.`,
+  },
+  {
+    q: 'Something arrived broken',
+    a: 'Photograph it and message me. If a seam has come apart or a clasp has failed, I will repair it and you can collect it again at no cost. This happens rarely, but it does happen, and it should never be your problem to solve.',
+  },
+];
+---
+
+<Storefront
+  title={`Collection & delivery in ${SALES_REGION.city} — Crochet & Co.`}
+  description={`Everything is made to order. Collection or local delivery within ${SALES_REGION.city} only — no postage.`}
+  banners={banners}
+>
+  <div class="shell shell--prose">
+    <header class="page-head">
+      <h1 class="page-title">Collection &amp; delivery</h1>
+      <p class="lede measure-wide">
+        No postage, no courier, no waiting on a parcel. The shop is in
+        {SALES_REGION.city} and that is where it stays.
+      </p>
+    </header>
+
+    <div class="chain-rule" aria-hidden="true"></div>
+
+    <section class="region-slot" aria-label="Where the shop delivers">
+      <RegionNotice />
+    </section>
+
+    <section class="facts" aria-label="Key facts">
+      <div class="fact">
+        <span class="fact-value">0</span>
+        <span class="fact-label">postage, because there is none</span>
+      </div>
+      <div class="fact">
+        <span class="fact-value">2–3</span>
+        <span class="fact-label">weeks for made-to-order pieces</span>
+      </div>
+      <div class="fact">
+        <span class="fact-value">{SALES_REGION.city}</span>
+        <span class="fact-label">collection, by appointment</span>
+      </div>
+    </section>
+
+    <div class="prose">
+      <section>
+        <h2>Why there is no shipping</h2>
+        <p>
+          Everything here is worked by hand, in runs of one to ten. Posting a
+          crocheted keychain to the other end of the country would cost more than
+          the keychain, take four days, and arrive in a box that is bigger than the
+          thing inside it. It would also be slightly absurd — you would be paying
+          a courier to carry something I could hand you myself.
+        </p>
+        <p>
+          So: collect from {SALES_REGION.city}, or local delivery inside the city
+          for anything big enough to be worth carrying. If you are further away,
+          the honest answer is that this shop is not for you, and I would rather say
+          so than take your money and disappoint you in a week.
+        </p>
+      </section>
+
+      <section>
+        <h2>Common questions</h2>
+        <dl class="faq">
+          {
+            FAQ.map((item) => (
+              <>
+                <dt>{item.q}</dt>
+                <dd>{item.a}</dd>
+              </>
+            ))
+          }
+        </dl>
+      </section>
+    </div>
+
+    <aside class="cta-block panel panel--blush">
+      <p class="cta-text">In {SALES_REGION.city}? Message me.</p>
+      <a
+        class="btn-stitch"
+        href={whatsappUrl()}
+        target="_blank"
+        rel="noopener noreferrer">Message on WhatsApp</a
+      >
+    </aside>
+  </div>
+</Storefront>
+
+<style>
+  .page-head { padding-block: 2.5rem 1.25rem; }
+
+  .page-title {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-section);
+    font-variation-settings: 'SOFT' 50, 'WONK' 1, 'opsz' 60;
+  }
+
+  .lede { margin: 0; font-size: 1.05rem; line-height: 1.6; color: var(--color-ink-soft); }
+
+  .region-slot { margin-top: 1.5rem; }
+
+  .facts {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, 1fr);
+    padding-block: 2rem;
+  }
+
+  .fact {
+    display: grid;
+    gap: 0.2rem;
+    align-content: start;
+    padding: 1.1rem;
+    border-radius: var(--radius-card);
+    background: color-mix(in oklab, var(--color-blush) 34%, var(--color-paper));
+    border: 1.5px solid color-mix(in oklab, var(--color-rose) 22%, transparent);
+  }
+
+  .fact-value {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 50, 'WONK' 0, 'opsz' 40;
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.05;
+    color: var(--color-rose-deep);
+    /* A city name is longer than a number. */
+    overflow-wrap: anywhere;
+  }
+
+  .fact-label { font-size: 0.82rem; line-height: 1.4; color: var(--color-ink-soft); }
+
+  .prose { padding-block: 1rem 2rem; display: grid; gap: 2rem; }
+
+  .prose h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+    font-variation-settings: 'SOFT' 45, 'WONK' 1, 'opsz' 40;
+  }
+
+  .prose p { margin: 0 0 0.9rem; line-height: 1.7; color: var(--color-ink-soft); }
+  .prose p:last-child { margin-bottom: 0; }
+
+  .faq { margin: 0; display: grid; grid-template-columns: 1fr; gap: 0.15rem; }
+
+  @media (min-width: 640px) {
+    .faq { grid-template-columns: minmax(11rem, 1fr) 2fr; }
+  }
+
+  .faq dt { font-weight: 600; color: var(--color-ink); padding-block: 0.6rem; }
+
+  .faq dd {
+    margin: 0 0 0.6rem;
+    padding-block: 0.6rem;
+    line-height: 1.6;
+    color: var(--color-ink-soft);
+  }
+
+  @media (min-width: 640px) {
+    .faq dd { margin-bottom: 0; }
+  }
+
+  .cta-block {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .cta-text {
+    margin: 0;
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 40, 'WONK' 1, 'opsz' 30;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+</style>

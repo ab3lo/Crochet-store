@@ -1,0 +1,89 @@
+---
+/**
+ * Delivery-region notice.
+ *
+ * The shop only sells in Bahawalpur, so that has to be visible before
+ * somebody fills a basket — not after, in a rejection email. Shown on every
+ * product page and in the basket.
+ *
+ * It cannot be a hard block: a static site has no idea where the shopper is,
+ * and a postcode gate would be a worse experience than an honest sentence.
+ */
+
+import { SALES_REGION } from '@crochet/shared';
+
+interface Props {
+  /** `inline` sits inside a paragraph flow; `panel` is a standalone box. */
+  variant?: 'panel' | 'inline';
+}
+
+const { variant = 'panel' } = Astro.props;
+---
+
+{
+  variant === 'inline' ? (
+    <span class="inline">
+      <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+        <path
+          d="M8 1.5c2.5 0 4.5 2 4.5 4.5 0 3.2-4.5 8.5-4.5 8.5S3.5 9.2 3.5 6C3.5 3.5 5.5 1.5 8 1.5Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+          stroke-linejoin="round"></path>
+        <circle cx="8" cy="6" r="1.6" fill="currentColor"></circle>
+      </svg>
+      {SALES_REGION.city} only
+    </span>
+  ) : (
+    <p class="region">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+        <path
+          d="M8 1.5c2.5 0 4.5 2 4.5 4.5 0 3.2-4.5 8.5-4.5 8.5S3.5 9.2 3.5 6C3.5 3.5 5.5 1.5 8 1.5Z"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+          stroke-linejoin="round"></path>
+        <circle cx="8" cy="6" r="1.6" fill="currentColor"></circle>
+      </svg>
+      <span>
+        <strong>Collection or delivery in {SALES_REGION.city}.</strong> Everything
+        is made to order or finished to order, so the shop is open for collection
+        by appointment. Message me and we will work out a day.
+      </span>
+    </p>
+  )
+}
+
+<style>
+  .region {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.5rem;
+    background: color-mix(in oklab, var(--color-blush) 30%, var(--color-paper));
+    border: 1.5px dashed color-mix(in oklab, var(--color-rose) 35%, transparent);
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--color-ink-soft);
+  }
+
+  .region svg {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    color: var(--color-rose-deep);
+  }
+
+  .region strong { color: var(--color-ink); }
+
+  .inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-rose-deep);
+    white-space: nowrap;
+  }
+</style>

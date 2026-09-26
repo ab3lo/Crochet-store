@@ -1,0 +1,44 @@
+---
+/**
+ * Storefront chrome: announcement slot, header, banner rail, cart drawer,
+ * footer. Product and category pages render inside the default slot.
+ */
+
+import Base from './Base.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import WhatsAppButton from '@/components/WhatsAppButton.astro';
+import BannerRail from '@/components/islands/BannerRail.svelte';
+import CartDrawer from '@/components/islands/CartDrawer.svelte';
+import type { BannerView } from '@crochet/shared';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  banners?: BannerView[];
+}
+
+const { title, description, image, banners = [] } = Astro.props;
+
+// Only banners that are actually live right now get rendered server-side.
+const live = banners.filter((b) => b.isLive && b.status !== 'archived');
+---
+
+<Base title={title} description={description} image={image}>
+  <Header />
+
+  {live.length > 0 && <BannerRail banners={live} client:load />}
+
+  <main id="main">
+    <slot />
+  </main>
+
+  <Footer />
+
+  {/* Static link, no island. */}
+  <WhatsAppButton />
+
+  {/* One drawer instance for the whole site. */}
+  <CartDrawer client:load />
+</Base>

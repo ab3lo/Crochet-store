@@ -1,0 +1,80 @@
+---
+import Storefront from '@/layouts/Storefront.astro';
+import { getCatalogue } from '@/lib/api';
+import { CATEGORY_META } from '@crochet/shared';
+
+const { banners } = await getCatalogue();
+---
+
+<Storefront
+  title="Page not found — Crochet & Co."
+  description="That page is not here."
+  banners={banners}
+>
+  <div class="shell shell--narrow">
+    <div class="oops">
+      <svg viewBox="0 0 120 70" width="120" height="70" aria-hidden="true">
+        <path
+          d="M4 62 Q30 8 60 62 Q90 8 116 62"
+          fill="none"
+          stroke="var(--color-rose)"
+          stroke-width="3"
+          stroke-linecap="round"></path>
+        <path
+          d="M4 40 Q30 -6 60 44 Q90 2 116 40"
+          fill="none"
+          stroke="var(--color-rose)"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          opacity="0.4"></path>
+      </svg>
+
+      <h1>That came off the hook wrong</h1>
+      <p>
+        There is nothing at this address. It may have sold, or the link may have been
+        mistyped. The rest of the shop is still here.
+      </p>
+
+      <ul class="links">
+        {CATEGORY_META.map((cat) => <li><a href={cat.href}>{cat.title}</a></li>)}
+        <li><a href="/custom-orders">Commission a piece</a></li>
+      </ul>
+    </div>
+  </div>
+</Storefront>
+
+<style>
+  .oops {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    text-align: center;
+    padding-block: 4rem 2rem;
+  }
+
+  h1 { margin: 0; font-size: var(--text-section); font-variation-settings: 'SOFT' 50, 'WONK' 1, 'opsz' 60; }
+
+  p { margin: 0; max-width: 32rem; line-height: 1.65; color: var(--color-ink-soft); }
+
+  .links {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .links a {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: 1.5px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+    font-size: 0.85rem;
+    color: var(--color-ink-soft);
+    text-decoration: none;
+  }
+
+  .links a:hover { border-color: var(--color-rose); color: var(--color-ink); }
+</style>

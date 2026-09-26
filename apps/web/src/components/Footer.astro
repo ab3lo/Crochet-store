@@ -1,0 +1,146 @@
+---
+/**
+ * Footer. Small, and useful rather than a link farm: what the shop makes,
+ * how to order, and how to reach a person.
+ */
+
+import CommunityLink from '@/components/CommunityLink.astro';
+import { contact, communityUrl } from '@/lib/contact';
+import { FOOTER_SHOP_LINKS, SITE_INFORMATION_LINKS } from '@/lib/navigation';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="shell shell--wide footer-grid">
+    <div class="footer-brand">
+      <p class="footer-mark">Crochet &amp; Co.</p>
+      <p class="footer-note">
+        Everything here is worked by hand, in small numbers, by one person with a
+        basket of yarn and too many hooks.
+      </p>
+    </div>
+
+    <nav class="footer-col" aria-label="Shop">
+      <h2 class="footer-head">Shop</h2>
+      <ul>
+        {FOOTER_SHOP_LINKS.map((link) => (
+          <li><a href={link.href}>{link.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <nav class="footer-col" aria-label="Information">
+      <h2 class="footer-head">Information</h2>
+      <ul>
+        {SITE_INFORMATION_LINKS.map((link) => (
+          <li><a href={link.href}>{link.label}</a></li>
+        ))}
+        <li><a href="/admin">Shop owner sign-in</a></li>
+      </ul>
+    </nav>
+
+    <div class="footer-col footer-news">
+      <h2 class="footer-head">Work in progress</h2>
+      <p class="footer-note">
+        Whatever is on the hook this week, photographed as I go. Join the group
+        and you see it before it reaches the shop.
+      </p>
+      <CommunityLink />
+    </div>
+  </div>
+
+  <div class="shell shell--wide chain-rule chain-rule--tight" aria-hidden="true"></div>
+
+  <div class="shell shell--wide footer-base">
+    <p>© {year} Crochet &amp; Co. Made slowly.</p>
+    <p>Built with Astro, Svelte, Hono and better-auth.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 5rem;
+    background: color-mix(in oklab, var(--color-blush) 32%, var(--color-shell));
+    padding-block: 3rem 2rem;
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: 2.25rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 700px) {
+    .footer-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (min-width: 1024px) {
+    .footer-grid { grid-template-columns: 1.6fr 1fr 1fr 1.5fr; gap: 2rem; }
+  }
+
+  .footer-mark {
+    margin: 0 0 0.5rem;
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 30, 'WONK' 1, 'opsz' 24;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .footer-note {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--color-ink-soft);
+    max-width: 30ch;
+  }
+
+  .footer-head {
+    margin: 0 0 0.7rem;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+  }
+
+  /* An uppercase label is right here — a column heading in a footer is
+     structural navigation, not a decorative eyebrow over a heading. */
+  .footer-col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .footer-col a {
+    font-size: 0.9rem;
+    color: var(--color-ink-soft);
+    text-decoration: none;
+  }
+
+  .footer-col a:hover {
+    color: var(--color-rose-deep);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .footer-news .footer-note { margin-bottom: 0.85rem; }
+
+  .footer-base {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    justify-content: space-between;
+    padding-top: 1.25rem;
+  }
+
+  .footer-base p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--color-ink-faint);
+  }
+</style>

@@ -1,0 +1,86 @@
+---
+/**
+ * Document shell. Everything else renders inside <slot />.
+ *
+ * `data-theme="blush"` on <html> is what activates the theme; the value
+ * must match the selector in `styles/theme-blush.css`.
+ */
+
+import '@/styles/global.css';
+import { absolute } from '@/lib/config';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Used for the og:image and the JSON-LD. Defaults to the social card. */
+  image?: string;
+  /** Keep search engines away (admin, previews). */
+  noindex?: boolean;
+  /** Minimal pages (admin) skip the storefront chrome. */
+  bare?: boolean;
+}
+
+const { title, description, image, noindex = false, bare = false } = Astro.props;
+
+const canonical = absolute(Astro.url.pathname);
+const ogImage = absolute(image ?? '/images/og-default.svg');
+---
+
+<!doctype html>
+<html lang="en" data-theme="blush">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Crochet & Co." />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#FBF4F2" />
+
+    {/* Fraunces is the display face; preload so the hero does not reflow.
+        Same file the stylesheet references, so the fetch is deduped. */}
+    <link
+      rel="preload"
+      href="/fonts/fraunces.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/instrument-sans.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body class:list={[bare && 'is-bare']}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot />
+
+    {!bare && (
+      <script is:inline>
+        // Written inline to run before first paint: if a banner was
+        // dismissed this session, hide it before it flashes.
+        try {
+          if (sessionStorage.getItem('crochet.banner.dismissed')) {
+            document.documentElement.dataset.bannerDismissed = 'true';
+          }
+        } catch {}
+      </script>
+    )}
+  </body>
+</html>

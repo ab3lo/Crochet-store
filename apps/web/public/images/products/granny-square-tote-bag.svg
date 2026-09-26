@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500" role="img" aria-label="Granny square tote">
+  <defs>
+  <filter id="g">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+    <linearGradient id="wash" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%" stop-color="#F1E6D8"/>
+      <stop offset="100%" stop-color="#fff"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    /* System stack: these are placeholders, not a font delivery mechanism. */
+    .lbl { font-family: Georgia, 'Times New Roman', serif; font-size: 21px; fill: #8A6A4B; }
+    .cat { font-family: system-ui, sans-serif; font-size: 11px; letter-spacing: 2.4px;
+           text-transform: uppercase; fill: #8A6A4B; opacity: 0.6; }
+  </style>
+
+  <rect width="400" height="500" fill="url(#wash)"/>
+  <rect width="400" height="500" filter="url(#g)" opacity="0.05"/>
+
+  <!-- A puff-stitch scallop along the bottom, the same motif the site uses. -->
+  <path d="M0 500 a10 12 0 0 1 20 0 M20 500 a10 12 0 0 1 20 0 M40 500 a10 12 0 0 1 20 0 M60 500 a10 12 0 0 1 20 0 M80 500 a10 12 0 0 1 20 0 M100 500 a10 12 0 0 1 20 0 M120 500 a10 12 0 0 1 20 0 M140 500 a10 12 0 0 1 20 0 M160 500 a10 12 0 0 1 20 0 M180 500 a10 12 0 0 1 20 0 M200 500 a10 12 0 0 1 20 0 M220 500 a10 12 0 0 1 20 0 M240 500 a10 12 0 0 1 20 0 M260 500 a10 12 0 0 1 20 0 M280 500 a10 12 0 0 1 20 0 M300 500 a10 12 0 0 1 20 0 M320 500 a10 12 0 0 1 20 0 M340 500 a10 12 0 0 1 20 0 M360 500 a10 12 0 0 1 20 0 M380 500 a10 12 0 0 1 20 0" fill="none" stroke="#8A6A4B" stroke-width="2" opacity="0.35"/>
+
+  
+    <g fill="none" stroke="#8A6A4B" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M140 190 L150 300 Q152 312 164 312 L236 312 Q248 312 250 300 L260 190 Z" />
+      <path d="M172 190 L172 162 Q172 148 186 148 L214 148 Q228 148 228 162 L228 190" />
+      <path d="M150 232 L250 232" />
+    </g>
+
+  <g>
+      <text x="200" y="404" text-anchor="middle" class="lbl">Granny square tote</text>
+      <text x="200" y="442" text-anchor="middle" class="cat">bags</text>
+  </g>
+</svg>

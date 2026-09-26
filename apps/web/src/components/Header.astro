@@ -1,0 +1,178 @@
+---
+/**
+ * Site header.
+ *
+ * The wordmark is drawn, not typeset: a chain-loop mark beside the name.
+ * It is the only piece of pure ornament on the page, and it earns its place
+ * by being the shop's initial made in its own medium.
+ */
+
+import CartButton from '@/components/islands/CartButton.svelte';
+import MobileNav from '@/components/islands/MobileNav.svelte';
+import { whatsappUrl } from '@/lib/contact';
+import {
+  DESKTOP_SHOP_LINKS,
+  MOBILE_INFORMATION_LINKS,
+  MOBILE_SHOP_LINKS,
+  SITE_INFORMATION_LINKS,
+  isActivePath,
+} from '@/lib/navigation';
+
+const path = Astro.url.pathname;
+const aboutLink = SITE_INFORMATION_LINKS[0]!;
+---
+
+<header class="site-header">
+  <div class="shell shell--wide header-inner gap-3 min-nav:gap-5">
+    <a class="wordmark" href="/" aria-label="Crochet and Co, home">
+      <svg
+        class="mark"
+        viewBox="0 0 34 20"
+        width="34"
+        height="20"
+        aria-hidden="true"
+      >
+        <path
+          d="M2 17 Q9 3 17 17 Q25 3 32 17"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"></path>
+        <path
+          d="M2 11 Q9 -3 17 11 Q25 -3 32 11"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.2"
+          stroke-linecap="round"
+          opacity="0.45"></path>
+      </svg>
+      <span class="wordmark-text">Crochet <em>&amp;</em> Co.</span>
+    </a>
+
+    <nav class="nav hidden min-nav:flex" aria-label="Shop by category">
+      {DESKTOP_SHOP_LINKS.map((link) => (
+        <a
+          href={link.href}
+          class="nav-link"
+          aria-current={isActivePath(path, link.href) ? 'page' : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="header-actions ml-auto min-nav:ml-0 gap-2 min-nav:gap-4">
+      <a
+        class="nav-link header-extra hidden min-nav-label:inline-block"
+        href={aboutLink.href}
+        aria-current={isActivePath(path, aboutLink.href) ? 'page' : undefined}
+      >
+        {aboutLink.label}
+      </a>
+      <div class="min-nav:hidden">
+        <MobileNav
+          path={path}
+          shopLinks={MOBILE_SHOP_LINKS}
+          informationLinks={MOBILE_INFORMATION_LINKS}
+          whatsappHref={whatsappUrl()}
+          client:load
+        />
+      </div>
+      <CartButton client:load />
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  /* Keep the blur, but put it on a sibling layer. `backdrop-filter` on the
+     header itself makes it a containing block for fixed descendants, which
+     traps the mobile menu's viewport-sized overlay inside the 64px header. */
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: color-mix(in oklab, var(--color-shell) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid color-mix(in oklab, var(--color-rose) 18%, transparent);
+    pointer-events: none;
+  }
+
+  .header-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    min-height: 64px;
+  }
+
+  /* ── Wordmark ──────────────────────────────────────────────────── */
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--color-ink);
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .mark { color: var(--color-rose); flex-shrink: 0; }
+
+  .wordmark-text {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 30, 'WONK' 1, 'opsz' 20;
+    font-weight: 600;
+    font-size: 1.12rem;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+  }
+
+  /* The ampersand is the one thing set in italic — a single deliberate
+     accent inside the wordmark, not a headline. */
+  .wordmark-text em {
+    font-style: italic;
+    color: var(--color-rose-deep);
+  }
+
+  /* ── Nav ───────────────────────────────────────────────────────── */
+
+  .nav {
+    align-items: center;
+    gap: 1.15rem;
+    margin-left: auto;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-ink-soft);
+    text-decoration: none;
+    padding-block: 0.35rem;
+    border-bottom: 1.5px solid transparent;
+    transition: color 130ms ease, border-color 130ms ease;
+    white-space: nowrap;
+  }
+
+  .nav-link:hover {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-rose);
+  }
+
+  .nav-link[aria-current='page'] {
+    color: var(--color-ink);
+    border-bottom-color: var(--color-rose);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+</style>
