@@ -10,7 +10,7 @@
   import { cart, checkout } from '@/lib/stores/cart';
   import { ui } from '@/lib/stores/ui';
   import { money } from '@/lib/format';
-  import { SALES_REGION } from '@/lib/contact';
+  import { PAYMENT_TERMS, SALES_REGION } from '@/lib/contact';
 
   let panel = $state<HTMLElement | null>(null);
   let closeBtn = $state<HTMLButtonElement | null>(null);
@@ -178,8 +178,10 @@
         </div>
 
         <p class="drawer-note">
-          Checkout is by WhatsApp — I will confirm the pieces are free
-          before you pay for anything.
+          Checkout is by WhatsApp. Nothing is made until it is ordered, so I will
+          send you the details for a {PAYMENT_TERMS.advancePercent}% advance by
+          {' '}{PAYMENT_TERMS.methods.join(' or ')} — or any other mobile wallet I
+          send you — and the balance is due when you collect.
         </p>
 
         <p class="drawer-region">

@@ -17,6 +17,20 @@ export default defineConfig({
   // `never` here made every internal link 308 on the way to its own page.
   // `always` means the links we emit, the canonical we advertise and the URL
   // Pages actually serves are the same string.
+  /**
+   * No syntax highlighting.
+   *
+   * There is no markdown in this project, so the highlighter never runs — but
+   * Astro's default is Shiki, which colours code with inline `style`
+   * attributes, and `security.csp` below forbids those on anything but
+   * `style-src-attr`. Astro warns at build time and treats it as fatal. Off
+   * explicitly, so adding a markdown file later cannot quietly break the
+   * build or the policy. Turn it back on with Prism if that day comes.
+   */
+  markdown: {
+    syntaxHighlight: false,
+  },
+
   trailingSlash: 'always',
 
   /**

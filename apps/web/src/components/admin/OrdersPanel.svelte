@@ -164,7 +164,7 @@
               id={`note-${order.id}`}
               rows="3"
               bind:value={notes[order.id]}
-              placeholder="Yarn quoted, colour agreed, deposit received…"
+              placeholder="Yarn quoted, colour agreed, advance received…"
             ></textarea>
 
             {#if order.adminNote && notes[order.id] !== order.adminNote}

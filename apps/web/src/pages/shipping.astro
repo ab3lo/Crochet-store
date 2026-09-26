@@ -1,8 +1,9 @@
 ---
 import Storefront from '@/layouts/Storefront.astro';
 import RegionNotice from '@/components/RegionNotice.astro';
+import PaymentNotice from '@/components/PaymentNotice.astro';
 import { getCatalogue } from '@/lib/api';
-import { SALES_REGION } from '@crochet/shared';
+import { PAYMENT_TERMS, SALES_REGION } from '@crochet/shared';
 import { whatsappUrl } from '@/lib/contact';
 
 const { banners } = await getCatalogue();
@@ -21,8 +22,12 @@ const FAQ = [
     a: `Possible for anything larger than a keychain, inside ${SALES_REGION.city} and the immediate surroundings. Message me your area and the size of the piece and I will tell you honestly whether it is worth doing and what it would cost.`,
   },
   {
-    q: 'Can I pay online?',
-    a: `Not on the site. You place an order by WhatsApp and I send you a payment link for the exact amount. That keeps your card details off this site entirely, and it means you can talk to a person before paying for anything.`,
+    q: 'How do I pay?',
+    a: `There is no card checkout here, deliberately — I would rather you talk to a person before any money moves. Message me on WhatsApp to start the order and I will send you the details for a ${PAYMENT_TERMS.advancePercent}% advance by ${PAYMENT_TERMS.methods.join(' or ')}, or any other mobile wallet I send you. The balance is due when you collect. That advance is what buys the yarn and holds your place in the queue; the rest is paid once the piece is finished and in your hand.`,
+  },
+  {
+    q: 'Why an advance?',
+    a: `Because nothing is made until it is ordered. The ${PAYMENT_TERMS.advancePercent}% is not a deposit to lock me in — it is the money that buys your yarn before I start, so a change of heart costs me the materials rather than your afternoon.`,
   },
   {
     q: 'Something arrived broken',
@@ -49,6 +54,10 @@ const FAQ = [
 
     <section class="region-slot" aria-label="Where the shop delivers">
       <RegionNotice />
+    </section>
+
+    <section class="pay-slot" aria-label="How to pay">
+      <PaymentNotice />
     </section>
 
     <section class="facts" aria-label="Key facts">
@@ -123,6 +132,9 @@ const FAQ = [
   .lede { margin: 0; font-size: 1.05rem; line-height: 1.6; color: var(--color-ink-soft); }
 
   .region-slot { margin-top: 1.5rem; }
+
+  /* The two notices are a matched pair, so they sit as one stack. */
+  .pay-slot { margin-top: 0.6rem; }
 
   .facts {
     display: grid;

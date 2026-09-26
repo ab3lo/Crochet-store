@@ -1,8 +1,10 @@
 ---
 import Storefront from '@/layouts/Storefront.astro';
 import Inquiry from '@/components/islands/Inquiry.svelte';
+import PaymentNotice from '@/components/PaymentNotice.astro';
 import { getCatalogue } from '@/lib/api';
 import { contact, communityUrl } from '@/lib/contact';
+import { PAYMENT_TERMS, SALES_REGION } from '@crochet/shared';
 
 const { banners } = await getCatalogue();
 
@@ -17,11 +19,11 @@ const STEPS = [
   },
   {
     title: 'You approve, I start',
-    body: 'A third of the price holds your place in the queue. Nothing is started until you have said yes.',
+    body: `${PAYMENT_TERMS.advancePercent}% of the price is the advance, sent by ${PAYMENT_TERMS.methods.join(' or ')} or any other mobile wallet I give you. Nothing is started until that has landed and you have said yes.`,
   },
   {
-    title: 'It gets posted',
-    body: 'Photographed before it leaves, wrapped in tissue, and in the post within a day or two of finishing.',
+    title: 'You collect',
+    body: `Photographed before it leaves my hands, wrapped in tissue, and ready in ${SALES_REGION.city} by appointment. The balance is due then — there is nothing to pay on the site.`,
   },
 ];
 ---
@@ -38,7 +40,7 @@ const STEPS = [
       <p class="page-blurb measure-wide">
         Most of what I make started as somebody asking for a colour that was not in
         stock. If you can describe it, I can usually work out how to crochet it — and
-        if I cannot, I will tell you straight away rather than take your deposit.
+        if I cannot, I will tell you straight away rather than take your advance.
       </p>
     </header>
 
@@ -79,6 +81,9 @@ const STEPS = [
           <span class="tag">Two to three weeks</span>
           <span>typical lead time for a bespoke piece. Rush orders are sometimes possible — ask.</span>
         </p>
+        <div class="pay-slot">
+          <PaymentNotice />
+        </div>
       </div>
 
       <!--
@@ -171,6 +176,8 @@ const STEPS = [
   .enquiry-copy a { color: var(--color-rose-deep); text-underline-offset: 3px; }
 
   .turnaround { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; font-size: 0.88rem; }
+
+  .pay-slot { margin-top: 1.1rem; }
 
 
 </style>

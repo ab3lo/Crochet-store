@@ -14,9 +14,15 @@
  * derived from it — there is no one-to-one chat to open.
  */
 
-import { SALES_REGION, money } from '@crochet/shared';
+import { PAYMENT_TERMS, SALES_REGION, money } from '@crochet/shared';
 
 export { SALES_REGION };
+
+/**
+ * Re-exported for the same reason `SALES_REGION` is: the basket needs to quote
+ * the payment terms without reaching past this module for shop policy.
+ */
+export { PAYMENT_TERMS };
 
 export const contact = {
   /**
@@ -83,7 +89,8 @@ export function whatsappOrderUrl(
 
   return whatsappUrl(
     `Hello! I'd like to order:\n\n${items}\n\nTotal: ${money(subtotalCents)}\n\n` +
-      `${SALES_REGION.orderNote}\n\nMy address in ${SALES_REGION.city} is:`,
+      `${SALES_REGION.orderNote}\n${PAYMENT_TERMS.orderNote}\n\n` +
+      `My address in ${SALES_REGION.city} is:`,
   );
 }
 

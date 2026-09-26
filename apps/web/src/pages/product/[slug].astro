@@ -12,9 +12,10 @@ import AddToCart from '@/components/islands/AddToCart.svelte';
 import CatalogGrid from '@/components/islands/CatalogGrid.svelte';
 import BannerRenderer from '@/components/banners/BannerRenderer.svelte';
 import RegionNotice from '@/components/RegionNotice.astro';
+import PaymentNotice from '@/components/PaymentNotice.astro';
 import { getCatalogue, productsIn, sortProducts } from '@/lib/api';
 import { jsonLd } from '@/lib/seo';
-import { CATEGORY_META, CURRENCY, SALES_REGION, amount, money, type Category } from '@crochet/shared';
+import { CATEGORY_META, CURRENCY, PAYMENT_TERMS, SALES_REGION, amount, money, type Category } from '@crochet/shared';
 import { whatsappUrl } from '@/lib/contact';
 import { absolute } from '@/lib/config';
 import type { GetStaticPaths } from 'astro';
@@ -141,7 +142,9 @@ const jsonLdData = {
         <div class="stock-line">
           {
             product.madeToOrder ? (
-              <span>Made to order. Two to three weeks, depending on the queue.</span>
+              <span>
+                Made to order. Two to three weeks, depending on the queue. {PAYMENT_TERMS.short}
+              </span>
             ) : product.stock > 0 ? (
               <span>
                 {product.stock <= 3
@@ -158,6 +161,10 @@ const jsonLdData = {
 
         <div class="region-slot">
           <RegionNotice />
+        </div>
+
+        <div class="region-slot">
+          <PaymentNotice />
         </div>
 
         <a

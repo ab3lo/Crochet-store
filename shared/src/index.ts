@@ -60,6 +60,54 @@ export const SALES_REGION = {
   orderNote: 'Delivery: collection or local delivery within Bahawalpur only.',
 } as const;
 
+/**
+ * How an order is actually paid for.
+ *
+ * Nothing is stocked: every piece is made to order, so the maker wants an
+ * advance before buying yarn and starting, and the rest on collection. There
+ * is no card checkout, so the advance is sent through a mobile wallet the
+ * shop provides per order.
+ *
+ * This lives beside `SALES_REGION` for the same reason: the product pages,
+ * the basket, the shipping page, the custom-order page and the outbound
+ * WhatsApp message all quote these terms, and a customer who is told "40%
+ * advance" on one page and "pay in full" on another will assume the shop
+ * cannot add up.
+ */
+const ADVANCE_PERCENT = 40;
+const PAYMENT_METHODS = ['JazzCash', 'SadaPay'] as const;
+const METHODS_TEXT = PAYMENT_METHODS.join(' or ');
+
+export const PAYMENT_TERMS = {
+  /** Percentage taken before work starts. */
+  advancePercent: ADVANCE_PERCENT,
+
+  /** Named wallets, for the places that have room to be specific. */
+  methods: PAYMENT_METHODS,
+
+  /** Headline, for the notice. */
+  headline: 'Made to order, paid in advance.',
+
+  /**
+   * The notice body. Says who pays, how much and how. Built from the values
+   * above rather than repeating them, so the percentage and the wallets
+   * cannot drift away from the number and names a customer actually sees.
+   */
+  detail:
+    `Nothing on this site is made until you order it. Message me on WhatsApp to ` +
+    `start an order, and I will send you the details for a ` +
+    `${ADVANCE_PERCENT}% advance by ${METHODS_TEXT} — or any other mobile ` +
+    `wallet I send you. The balance is due when you collect.`,
+
+  /** One line, for a product page or the basket where space is tight. */
+  short: `${ADVANCE_PERCENT}% advance by mobile wallet to start. Balance on collection.`,
+
+  /** Appended to every outbound order message, next to `orderNote`. */
+  orderNote:
+    `Payment: ${ADVANCE_PERCENT}% advance by ${METHODS_TEXT} ` +
+    `(or any mobile wallet I send) before I start. Balance on collection.`,
+} as const;
+
 /* ── Categories ──────────────────────────────────────────────────────── */
 
 export const CATEGORIES = [
