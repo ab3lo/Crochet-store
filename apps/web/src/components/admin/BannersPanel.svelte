@@ -27,6 +27,8 @@
   import { createFlash } from '@/lib/flash.svelte';
   import { bannerComponent } from '@/components/banners/registry';
   import { formatDateTime } from '@/lib/format';
+  import { publishMessage } from '@/lib/publish';
+  import type { PublishState } from '@crochet/shared';
 
   type Draft = Partial<BannerView> & { id?: string };
 
@@ -210,8 +212,14 @@
     };
 
     const res = draft.id
-      ? await adminFetch(`/api/admin/banners/${draft.id}`, { method: 'PATCH', json: body })
-      : await adminFetch('/api/admin/banners', { method: 'POST', json: body });
+      ? await adminFetch<BannerView & { publish: PublishState }>(
+          `/api/admin/banners/${draft.id}`,
+          { method: 'PATCH', json: body },
+        )
+      : await adminFetch<{ publish: PublishState }>('/api/admin/banners', {
+          method: 'POST',
+          json: body,
+        });
 
     saving = false;
 
@@ -222,27 +230,40 @@
     }
 
     const name = body.name || 'Promotion';
+    const subject = publish ? `${name} is live.` : `${name} saved as a draft.`;
     draft = null;
-    flash.show('ok', publish ? `${name} is live.` : `${name} saved as a draft.`);
+    // A promotion that is "live" in the database but not yet on the site is
+    // the exact confusion this message exists to prevent.
+    flash.show('ok', res.data?.publish ? publishMessage(res.data.publish, subject) : subject);
     await load();
   }
 
   async function remove(banner: BannerView) {
     if (!confirm(`Delete "${banner.name}"?`)) return;
-    const { error } = await adminFetch(`/api/admin/banners/${banner.id}`, { method: 'DELETE' });
+    const { data, error } = await adminFetch<{ publish: PublishState }>(
+      `/api/admin/banners/${banner.id}`,
+      { method: 'DELETE' },
+    );
     if (error) return flash.show('bad', error);
-    flash.show('ok', `Deleted ${banner.name}.`);
+    flash.show(
+      'ok',
+      data?.publish
+        ? publishMessage(data.publish, `Deleted ${banner.name}.`)
+        : `Deleted ${banner.name}.`,
+    );
     await load();
   }
 
   async function toggleLive(banner: BannerView) {
     const next = banner.status === 'live' ? 'draft' : 'live';
-    const { error } = await adminFetch(`/api/admin/banners/${banner.id}`, {
-      method: 'PATCH',
-      json: { status: next },
-    });
+    const { data, error } = await adminFetch<{ publish: PublishState }>(
+      `/api/admin/banners/${banner.id}`,
+      { method: 'PATCH', json: { status: next } },
+    );
     if (error) return flash.show('bad', error);
-    flash.show('ok', next === 'live' ? `${banner.name} is live.` : `${banner.name} pulled.`);
+
+    const subject = next === 'live' ? `${banner.name} is live.` : `${banner.name} pulled.`;
+    flash.show('ok', data?.publish ? publishMessage(data.publish, subject) : subject);
     await load();
   }
 

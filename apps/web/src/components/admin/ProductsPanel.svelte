@@ -7,10 +7,11 @@
 -->
 
 <script lang="ts">
-  import type { Category, ProductView } from '@crochet/shared';
+  import type { Category, ProductView, PublishState } from '@crochet/shared';
   import { CATEGORIES, money } from '@crochet/shared';
   import { adminFetch } from '@/lib/auth';
   import { createFlash } from '@/lib/flash.svelte';
+  import { publishMessage } from '@/lib/publish';
   import ProductForm from './ProductForm.svelte';
 
   type Draft = Partial<ProductView> & { id?: string };
@@ -56,21 +57,31 @@
     );
     if (!ok) return;
 
-    const { error } = await adminFetch(`/api/admin/products/${product.id}`, {
-      method: 'DELETE',
-    });
+    const { data, error } = await adminFetch<{ publish: PublishState }>(
+      `/api/admin/products/${product.id}`,
+      { method: 'DELETE' },
+    );
 
     if (error) return flash.show('bad', error);
-    flash.show('ok', `Deleted ${product.name}.`);
+    const subject = `Deleted ${product.name}.`;
+    flash.show('ok', data?.publish ? publishMessage(data.publish, subject) : subject);
     await load();
   }
 
   async function toggleHidden(product: ProductView) {
-    const { error } = await adminFetch(`/api/admin/products/${product.id}`, {
-      method: 'PATCH',
-      json: { hidden: !product.hidden },
-    });
+    const { data, error } = await adminFetch<{ publish: PublishState }>(
+      `/api/admin/products/${product.id}`,
+      { method: 'PATCH', json: { hidden: !product.hidden } },
+    );
     if (error) return flash.show('bad', error);
+
+    // Hiding a product *removes* it from the storefront, so this one does
+    // change what a shopper sees — it is not a private edit like an enquiry
+    // status, and it is the reason this row reports publishing at all.
+    const subject = product.hidden
+      ? `${product.name} is showing on the shop again.`
+      : `${product.name} hidden.`;
+    flash.show('ok', data?.publish ? publishMessage(data.publish, subject) : subject);
     await load();
   }
 

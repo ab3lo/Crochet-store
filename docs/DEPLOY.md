@@ -209,7 +209,94 @@ bun run create-admin
 ## 6. Deploy the API
 
 The API is one Bun process with no platform-specific bindings, so any Bun host
-works. Fly.io is the shortest path.
+works. Two routes, in the order most people should try them.
+
+### Cloudflare Tunnel — free, no payment method
+
+The API does not need to be reachable from the internet on its own, and it does
+not need to be up all day. Nothing public depends on it: the storefront is
+static, and the enquiry form opens WhatsApp and only *then* records a copy in
+the database, fire-and-forget. So the API is a tool you switch on when you are
+editing the shop.
+
+A tunnel gives it a public HTTPS name without a public IP, a forwarded port or
+a hosting bill.
+
+```bash
+# 1. Install
+#    macOS:   brew install cloudflared
+#    Linux:   see https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+#    Windows: winget install Cloudflare.cloudflared
+
+# 2. One-time: authorise this machine with your Cloudflare account
+cloudflared tunnel login
+
+# 3. Create the tunnel and name its public hostname
+cloudflared tunnel create crochet-api
+cloudflared tunnel route dns crochet-api api.your-shop.com
+```
+
+That writes `~/.cloudflared/config.yml`. Point it at the API:
+
+```yaml
+tunnel: <tunnel-id>
+credentials-file: /home/you/.cloudflared/<tunnel-id>.json
+
+ingress:
+  - hostname: api.your-shop.com
+    service: http://localhost:8787
+  - service: http_status:404
+```
+
+Run both, in two terminals:
+
+```bash
+bun run --cwd apps/api dev     # the API
+cloudflared tunnel run crochet-api
+```
+
+**Use a named tunnel, not `cloudflared tunnel --url`.** The `--url` form
+prints a random `*.trycloudflare.com` address that changes every restart, which
+means rebuilding the storefront every time you reboot. A named tunnel keeps
+its hostname, and the storefront's `PUBLIC_API_URL` stays valid.
+
+Two settings matter here:
+
+- `TRUSTED_PROXY=true` is now correct. Requests arrive through Cloudflare's
+  edge, which sets `cf-connect-ip` and overwrites `x-forwarded-for` — so those
+  headers are no longer client-spoofable and the rate limiter can trust them.
+- The tunnel hostname is a public origin, so `BETTER_AUTH_TRUSTED_ORIGINS` and
+  the CORS allowlist must list the real storefront origin, not `*`.
+
+If you would rather not keep a terminal open, install it as a system service
+(`cloudflared service install`) so it starts with the machine.
+
+### Moving to another machine
+
+Nothing about the API is bound to a machine. There is no local database, no
+state on disk, and no hostname or absolute path anywhere in the code. Moving is:
+
+```bash
+git clone <your-repo>          # the code is public
+cp old-machine/apps/api/.env  # the only machine-specific artefact
+cd apps/api && bun install
+cloudflared tunnel run crochet-api
+```
+
+That is the whole procedure, and it works because the tunnel is defined in your
+Cloudflare account rather than on the box — the machine only holds a token and
+a config file, both of which travel in `.env` and `~/.cloudflared`.
+
+The API prints a readiness report at boot listing what is configured and what
+is not, by variable name and never by value. If something is wrong on a fresh
+machine, that report is the first thing to read:
+
+```
+  Crochet & Co. API — ready
+  ✓ publish      deploy hook set — edits go live automatically
+  ! proxy        TRUSTED_PROXY is off, so every visitor shares one rate-limit
+                 bucket. Fine behind a tunnel, wrong behind a raw port.
+```
 
 ### Fly.io
 
@@ -381,18 +468,28 @@ Then, in a browser:
 
 ### Changing a product
 
-Admin panel → Catalogue → Edit → Save. Done. The storefront islands re-fetch
-from the API, so the change appears within a minute without a redeploy.
+Admin panel → Catalogue → Edit → Save. The write goes to the database and the
+API immediately asks Cloudflare Pages to rebuild, so the change is live in a
+couple of minutes with no commit and no push. The panel says which of those
+actually happened — "rebuilding now" versus "saved, but nothing will publish
+this" — so a silent no-op is not possible.
 
-**But a new product needs a deploy.** Product pages are prerendered at build
-time from the snapshot, so a piece that has never been built has no page yet.
-To publish one:
+This works because of `PAGES_DEPLOY_HOOK`. Without it the edit is still saved
+to the database but the site does not change, which is the failure mode worth
+knowing about: the admin panel will tell you so rather than implying success.
+
+Only catalogue writes trigger a rebuild. Changing an enquiry's status does not,
+because it alters nothing in the static output and Cloudflare's free plan
+allows only a few hundred builds a month.
+
+If you would rather publish by hand, the old route still works — it rewrites
+the committed snapshot and pushes, which triggers the same build:
 
 ```bash
 bun run snapshot     # rewrites catalog.json from the live API
 git add apps/web/src/data/catalog.json
 git commit -m "Add the strawberry coin purse"
-git push             # triggers the deploy
+git push
 ```
 
 ### Changing the theme

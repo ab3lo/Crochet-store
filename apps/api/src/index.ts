@@ -14,7 +14,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { compress } from 'hono/compress';
-import { env } from './env.ts';
+import { env, bootReport } from './env.ts';
 import { auth } from './auth.ts';
 import { pool } from './db.ts';
 import { fail, rateLimit, clientIp, unexpected } from './lib/http.ts';
@@ -129,7 +129,12 @@ app.onError((err, c) => unexpected(c, err));
 
 const port = env.PORT;
 console.log(`\n  Crochet & Co. API  →  http://localhost:${port}`);
-console.log(`  storefront origins  →  ${env.trustedOrigins.join(', ') || '(none set)'}\n`);
+console.log(`  storefront origins  →  ${env.trustedOrigins.join(', ') || '(none set)'}`);
+
+// Names only, never values — see the note on the function. This is the line
+// that makes "moved it to a new machine and something is broken" a readable
+// sentence instead of a blank 500 in the browser.
+bootReport();
 
 // Deliberately NOT `export default app`. Bun treats a default-exported
 // `fetch`-shaped object as a server config and would start a *second*

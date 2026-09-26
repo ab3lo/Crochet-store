@@ -46,16 +46,33 @@ const schema = z.object({
 
   SEED_ADMIN_EMAIL: z.email().default('owner@example.com'),
   SEED_ADMIN_PASSWORD: z.string().min(12).optional(),
+
+  /**
+   * Cloudflare Pages deploy hook. Optional, and the API is fully functional
+   * without it — see `lib/deploy.ts` for what is lost (edits do not publish
+   * on their own).
+   *
+   * Deliberately a bare URL with no project ID or environment branching, so
+   * the same build is portable: a second API is a second `.env`, not a
+   * second deployment of this code.
+   */
+  PAGES_DEPLOY_HOOK: z.url().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
 
 if (!parsed.success) {
+  // Every problem at once, not the first one. This function runs at most once
+  // per process start, so the cost of a second attempt is a restart — and a
+  // restart-per-typo loop is exactly what someone hits when they are moving
+  // the API to a new machine and filling in `.env` for the first time.
   const detail = parsed.error.issues
     .map((i) => `  • ${i.path.join('.')}: ${i.message}`)
     .join('\n');
+
   console.error(
-    `\n✗ Invalid environment — copy .env.example to .env and fill it in.\n${detail}\n`,
+    `\n✗ Invalid environment — copy .env.example to .env and fill it in.\n${detail}\n` +
+      `  ${parsed.error.issues.length} problem(s) above. All of them are listed on purpose.\n`,
   );
   process.exit(1);
 }
@@ -71,3 +88,52 @@ export const env = {
     .map((s) => s.trim())
     .filter(Boolean),
 } as const;
+
+/**
+ * What this process can and cannot do, printed once at boot.
+ *
+ * Value names only, never values — a readiness line that echoed a connection
+ * string or a key would put a credential in whatever collects the logs, which
+ * is the same mistake as committing one.
+ *
+ * The reason this exists is migration. Nothing about the admin panel is bound
+ * to a machine, so "move it to the new laptop" is a real operation someone
+ * will do, and the failure mode without this is a blank 500 from the browser
+ * while the actual cause is three lines up in a terminal they have not looked
+ * at. A boot report names the missing piece directly.
+ */
+export function bootReport(): void {
+  const lines: string[] = [];
+  const warn: string[] = [];
+
+  if (env.PAGES_DEPLOY_HOOK) {
+    lines.push('publish      deploy hook set — edits go live automatically');
+  } else {
+    warn.push(
+      'publish      NO deploy hook — edits save to the database but will not\n' +
+        '             appear on the site until the next deploy. Set\n' +
+        '             PAGES_DEPLOY_HOOK to fix (Cloudflare Pages → your\n' +
+        '             project → Settings → Builds → Deploy hooks).',
+    );
+  }
+
+  if (env.isProd && !env.trustProxy) {
+    warn.push(
+      'proxy        TRUSTED_PROXY is off, so every visitor shares one rate-limit\n' +
+        '             bucket. Fine behind a tunnel, wrong behind a raw port.',
+    );
+  }
+
+  if (env.SEED_ADMIN_PASSWORD) {
+    warn.push(
+      'seed         SEED_ADMIN_PASSWORD is set. It is only used to create the first\n' +
+        '             admin account — remove it once you have signed in.',
+    );
+  }
+
+  console.log('\n  Crochet & Co. API — ready\n');
+  for (const l of lines) console.log(`  ✓ ${l}`);
+  for (const w of warn) console.log(`  ! ${w}`);
+  if (warn.length === 0) console.log('  ✓ nothing needs attention');
+  console.log('');
+}

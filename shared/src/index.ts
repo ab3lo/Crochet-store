@@ -418,6 +418,21 @@ export interface AdminUser {
   role: 'user' | 'admin';
 }
 
+/* ── Publishing ──────────────────────────────────────────────────────── */
+
+/**
+ * Whether a saved edit has been sent to the storefront's static build.
+ *
+ * The storefront is a static build, so a database write is not the same thing
+ * as a published change. These three states exist because a plain "Saved." on
+ * its own would let an owner believe a product is live when it is not.
+ *
+ *   triggered        a rebuild was requested; live shortly
+ *   not-configured   saved, but no deploy hook exists to publish it
+ *   failed           saved, but the rebuild could not be started
+ */
+export type PublishState = 'triggered' | 'not-configured' | 'failed';
+
 /* ── Endpoint surface (documents the API the storefront expects) ──────── */
 
 export const API_ROUTES = {

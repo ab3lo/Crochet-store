@@ -12,6 +12,7 @@ import {
   uuidParamSchema,
   type Banner,
   type Category,
+  type PublishState,
 } from '@crochet/shared';
 import {
   activeBanners,
@@ -28,6 +29,22 @@ import {
 import { fail, isUniqueViolation, ok, parse, unexpected } from '../lib/http.ts';
 import { generateBanner } from '../lib/banner-engine.ts';
 import { uploadProductImage, UploadError } from '../lib/storage.ts';
+import { triggerRebuild } from '../lib/deploy.ts';
+
+/**
+ * Ask the storefront to rebuild, and report whether it happened.
+ *
+ * Every catalogue write ends with this. The reason order and enquiry updates
+ * do *not* is budget, not principle: Cloudflare's free plan allows a few
+ * hundred builds a month, and a rebuild takes a couple of minutes. Firing one
+ * per status change on an enquiry would spend the whole allowance in a week
+ * and publish nothing, because a status change does not alter a single byte of
+ * the static site. Stock and visibility do, and those go through the product
+ * routes below like any other product edit.
+ */
+async function publish<T>(data: T): Promise<T & { publish: PublishState }> {
+  return { ...data, publish: await triggerRebuild() };
+}
 
 export const adminRoutes = new Hono();
 
@@ -108,7 +125,7 @@ adminRoutes.post('/products', async (c) => {
       await replaceProductImages(row!.id as string, parsed.images);
     }
 
-    return ok(c, { id: row!.id }, 201);
+    return ok(c, await publish({ id: row!.id }), 201);
   } catch (err) {
     return unexpected(c, err);
   }
@@ -182,7 +199,7 @@ adminRoutes.patch('/products/:id', async (c) => {
       await replaceProductImages(row.id as string, parsed.images);
     }
 
-    return ok(c, { id: row.id });
+    return ok(c, await publish({ id: row.id }));
   } catch (err) {
     return unexpected(c, err);
   }
@@ -195,7 +212,7 @@ adminRoutes.delete('/products/:id', async (c) => {
     await query(`UPDATE banners SET product_ids = product_ids - $1::uuid[] WHERE $1 = ANY(product_ids)`, [id]);
     const row = await queryOne(`DELETE FROM products WHERE id = $1 RETURNING id`, [id]);
     if (!row) return fail(c, 404, 'No such product.');
-    return ok(c, { deleted: true });
+    return ok(c, await publish({ deleted: true }));
   } catch (err) {
     return unexpected(c, err);
   }
@@ -323,7 +340,7 @@ adminRoutes.post('/banners', async (c) => {
         parsed.rationale,
       ],
     );
-    return ok(c, { id: row!.id }, 201);
+    return ok(c, await publish({ id: row!.id }), 201);
   } catch (err) {
     // A duplicate code is a normal admin mistake, not a server fault.
     if (isUniqueViolation(err)) {
@@ -393,7 +410,7 @@ adminRoutes.patch('/banners/:id', async (c) => {
       // wins — but an expired one should not linger as a storefront strip.
       await pruneExpired();
     }
-    return ok(c, toBanner(row));
+    return ok(c, await publish(toBanner(row)));
   } catch (err) {
     if (isUniqueViolation(err)) {
       return fail(c, 409, 'That discount code is already in use.', {
@@ -410,7 +427,7 @@ adminRoutes.delete('/banners/:id', async (c) => {
       c.req.param('id'),
     ]);
     if (!row) return fail(c, 404, 'No such banner.');
-    return ok(c, { deleted: true });
+    return ok(c, await publish({ deleted: true }));
   } catch (err) {
     return unexpected(c, err);
   }

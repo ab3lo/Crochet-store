@@ -12,6 +12,8 @@
   import { CATEGORIES } from '@crochet/shared';
   import { adminFetch, authClient } from '@/lib/auth';
   import { config } from '@/lib/config';
+  import { publishMessage } from '@/lib/publish';
+  import type { PublishState } from '@crochet/shared';
 
   type Draft = Partial<ProductView> & { id?: string };
 
@@ -206,11 +208,11 @@
     // `savedId` rather than `initial.id`: an upload may have created the row
     // already, and POSTing again would hit the unique slug constraint.
     const res = savedId
-      ? await adminFetch(`/api/admin/products/${savedId}`, {
-          method: 'PATCH',
-          json: body,
-        })
-      : await adminFetch<{ id: string }>('/api/admin/products', {
+      ? await adminFetch<{ id: string; publish: PublishState }>(
+          `/api/admin/products/${savedId}`,
+          { method: 'PATCH', json: body },
+        )
+      : await adminFetch<{ id: string; publish: PublishState }>('/api/admin/products', {
           method: 'POST',
           json: body,
         });
@@ -227,11 +229,16 @@
     // admin request is not served from a five-minute stale cache.
     await authClient.getSession();
 
-    const wasNew = !initial.id;
+    // "Saved" and "live" are different claims. The storefront is a static
+    // build, so the product is in the database either way — but it is only on
+    // the site if a rebuild was triggered. Reporting the difference is the
+    // whole point of the deploy hook; without it this message would be
+    // claiming a product is visible when it is not.
+    const subject = `${initial.id ? 'Saved' : 'Added'} ${name.trim()}.`;
     onSaved(
-      wasNew
-        ? `Added ${name.trim()}.`
-        : `Saved ${name.trim()}. The storefront picks this up within a minute.`,
+      res.data?.publish
+        ? publishMessage(res.data.publish, subject)
+        : `${subject} Publishing is not configured on this API.`,
     );
   }
 
