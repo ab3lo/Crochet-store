@@ -1,6 +1,46 @@
 {
-  "generatedAt": "2026-09-27T12:09:12.373Z",
+  "generatedAt": "2026-09-27T12:09:25.537Z",
   "products": [
+    {
+      "id": "1c3e4719-f319-4c4b-a954-335d1044cf73",
+      "slug": "zzz-test-probe-2",
+      "name": "Zzz Test Probe",
+      "tagline": "t",
+      "description": "d",
+      "priceCents": 1000,
+      "compareAtCents": null,
+      "category": "bags",
+      "images": [
+        "/images/products/zzz-test-probe-2-b68b94c1da.png"
+      ],
+      "details": {},
+      "stock": 1,
+      "madeToOrder": false,
+      "hidden": true,
+      "sortOrder": 0,
+      "createdAt": "2026-09-27T12:09:25.452Z",
+      "updatedAt": "2026-09-27T12:09:25.528Z",
+      "sale": null
+    },
+    {
+      "id": "3370a2a0-0c24-4d91-b279-bb44d8a90c8c",
+      "slug": "zzz-test-probe",
+      "name": "Zzz Test Probe",
+      "tagline": "t",
+      "description": "d",
+      "priceCents": 1000,
+      "compareAtCents": null,
+      "category": "bags",
+      "images": [],
+      "details": {},
+      "stock": 1,
+      "madeToOrder": false,
+      "hidden": true,
+      "sortOrder": 0,
+      "createdAt": "2026-09-27T12:09:19.956Z",
+      "updatedAt": "2026-09-27T12:09:19.956Z",
+      "sale": null
+    },
     {
       "id": "11111111-1111-4111-8111-000000000001",
       "slug": "strawberry-coin-purse-keychain",
