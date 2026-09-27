@@ -1,6 +1,27 @@
 {
-  "generatedAt": "2026-09-27T12:14:29.212Z",
+  "generatedAt": "2026-09-27T12:15:23.513Z",
   "products": [
+    {
+      "id": "bae15535-f229-4ae5-8e78-5115580039d1",
+      "slug": "repro-piece",
+      "name": "Repro Piece",
+      "tagline": "repro",
+      "description": "repro description",
+      "priceCents": 1250,
+      "compareAtCents": null,
+      "category": "keychains",
+      "images": [
+        "/images/products/repro-piece-f6a105885a.jpg"
+      ],
+      "details": {},
+      "stock": 0,
+      "madeToOrder": false,
+      "hidden": false,
+      "sortOrder": 0,
+      "createdAt": "2026-09-27T12:15:11.413Z",
+      "updatedAt": "2026-09-27T12:15:11.548Z",
+      "sale": null
+    },
     {
       "id": "5ad6a89b-9a8a-44bf-8c83-4973453b93f2",
       "slug": "jellyfish-keychain",
