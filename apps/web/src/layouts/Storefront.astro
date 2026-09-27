@@ -26,19 +26,58 @@ const live = banners.filter((b) => b.isLive && b.status !== 'archived');
 ---
 
 <Base title={title} description={description} image={image}>
-  <Header />
+  {/*
+    Everything above the footer, wrapped so the WhatsApp button has a track to
+    be sticky inside. The button pins to the bottom of the viewport for as long
+    as this box spans it, and stops at its bottom edge — which is where the
+    footer starts — instead of covering the footer's links. See
+    `components/WhatsAppButton.astro` for the mechanics.
 
-  {live.length > 0 && <BannerRail banners={live} client:load />}
+    The button has to be the track's *first* child: a sticky element is
+    positioned from where it sits in the flow, so anything before it would
+    offset the pin.
+  */}
+  <div class="wa-track">
+    {/* Static link, no island. */}
+    <WhatsAppButton />
 
-  <main id="main">
-    <slot />
-  </main>
+    <Header />
+
+    {live.length > 0 && <BannerRail banners={live} client:load />}
+
+    <main id="main">
+      <slot />
+    </main>
+  </div>
 
   <Footer />
-
-  {/* Static link, no island. */}
-  <WhatsAppButton />
 
   {/* One drawer instance for the whole site. */}
   <CartDrawer client:load />
 </Base>
+
+<style>
+  /**
+   * The track the WhatsApp button sticks inside, and the boundary it stops at.
+   *
+   * `min-height` is load-bearing, not decoration. The pin needs room to travel
+   * between its natural position at the top of this box and its stuck position
+   * at the bottom of the viewport; on a page shorter than the viewport there is
+   * no such room, the pin would never stick, and the button would sit at the top
+   * of the track — over the header. Guaranteeing a viewport of track means the
+   * button always has somewhere to go.
+   *
+   * The cost is that a page with less content than the viewport gets that much
+   * blank space above the footer, which is also what keeps the footer itself
+   * below the fold.
+   *
+   * `position: relative` is not needed for the sticky — the pin is a child of
+   * this box, and that is what constrains it — but it costs nothing and keeps
+   * this box in charge of its own stacking.
+   */
+  .wa-track {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+</style>
