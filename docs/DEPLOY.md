@@ -242,6 +242,41 @@ reverting one reverts the other.
 The hash in the filename means a changed photo is always a changed URL, so the
 cache headers stay correct.
 
+### Setting up the WhatsApp catalog
+
+**This is the one piece of WhatsApp commerce worth doing, and it is free.**
+
+A WhatsApp Business *catalog* needs no Business Platform API, no solution
+provider, no approved message templates and no per-message fees. You set it up
+once, customers browse the products inside WhatsApp, and they **forward their
+cart to you as an ordinary message** — exactly the order flow this shop already
+uses. Nothing runs on a server.
+
+```bash
+bun run catalog:whatsapp      # writes apps/admin/catalog-whatsapp.csv
+```
+
+Then upload that CSV at **Meta Commerce Manager → Catalogs → your catalog →
+Import → Upload CSV**, and assign the catalog to your WhatsApp Business
+account. Re-run the export after any publish that changes products or prices.
+
+The export carries title, description, price, currency, product link and
+availability for every non-hidden product. WhatsApp caps a catalog at **500
+products**, one catalog per business account, so twelve is nothing.
+
+⚠️ **The image links will not work yet.** Every product photo in this repository
+is an SVG placeholder and WhatsApp does not render SVG, so images will show as
+broken until real photographs are uploaded. That is the one thing standing
+between the current catalogue and a working WhatsApp catalog, and it deserves
+more attention than any infrastructure in this repository.
+
+**What not to do:** do not sign up for the WhatsApp Business Platform yet. It
+needs a solution provider, approved templates for anything proactive, and pays
+per message — both a cost and a break from the "no online compute" rule this
+project runs on. Revisit when there are more orders than one person can answer,
+and treat cart recovery and shipping notifications as the reasons to.
+
+
 ### Changing a promotion
 
 Admin panel → Promotions. "Generate a promotion" reads the catalogue, picks

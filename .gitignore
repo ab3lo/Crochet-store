@@ -65,6 +65,10 @@ id_ed25519
 *.db-wal
 *.db-shm
 
+# Generated from the committed catalogue, so it is a build artefact rather than
+# source. Re-create it with `bun run catalog:whatsapp` whenever products change.
+*.csv
+
 # logs
 *.log
 npm-debug.log*

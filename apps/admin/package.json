@@ -12,7 +12,8 @@
     "publish": "bun scripts/publish.ts",
     "db:reset": "bun scripts/reset.ts",
     "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check": "bun scripts/check.ts"
+    "check": "bun scripts/check.ts",
+    "catalog:whatsapp": "bun scripts/catalog-whatsapp.ts"
   },
   "dependencies": {
     "@crochet/shared": "workspace:*"

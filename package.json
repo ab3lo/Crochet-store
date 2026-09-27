@@ -18,7 +18,8 @@
     "publish": "bun run --cwd apps/admin publish",
     "theme": "bun run --cwd apps/web theme",
     "placeholders": "bun run --cwd apps/web placeholders",
-    "typecheck": "bun run --cwd apps/admin typecheck"
+    "typecheck": "bun run --cwd apps/admin typecheck",
+    "catalog:whatsapp": "bun run --cwd apps/admin catalog:whatsapp"
   },
   "engines": {
     "bun": ">=1.2.0"
