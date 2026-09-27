@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T12:15:23.513Z",
+  "generatedAt": "2026-09-27T12:15:52.660Z",
   "products": [
     {
       "id": "bae15535-f229-4ae5-8e78-5115580039d1",
@@ -42,201 +42,6 @@
       "createdAt": "2026-09-27T12:09:56.742Z",
       "updatedAt": "2026-09-27T12:14:24.983Z",
       "sale": null
-    },
-    {
-      "id": "1c3e4719-f319-4c4b-a954-335d1044cf73",
-      "slug": "zzz-test-probe-2",
-      "name": "Zzz Test Probe",
-      "tagline": "t",
-      "description": "d",
-      "priceCents": 1000,
-      "compareAtCents": null,
-      "category": "bags",
-      "images": [
-        "/images/products/zzz-test-probe-2-b68b94c1da.png"
-      ],
-      "details": {},
-      "stock": 1,
-      "madeToOrder": false,
-      "hidden": true,
-      "sortOrder": 0,
-      "createdAt": "2026-09-27T12:09:25.452Z",
-      "updatedAt": "2026-09-27T12:09:25.528Z",
-      "sale": null
-    },
-    {
-      "id": "3370a2a0-0c24-4d91-b279-bb44d8a90c8c",
-      "slug": "zzz-test-probe",
-      "name": "Zzz Test Probe",
-      "tagline": "t",
-      "description": "d",
-      "priceCents": 1000,
-      "compareAtCents": null,
-      "category": "bags",
-      "images": [],
-      "details": {},
-      "stock": 1,
-      "madeToOrder": false,
-      "hidden": true,
-      "sortOrder": 0,
-      "createdAt": "2026-09-27T12:09:19.956Z",
-      "updatedAt": "2026-09-27T12:09:19.956Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000002",
-      "slug": "granny-square-tote-bag",
-      "name": "Granny square tote",
-      "tagline": "Nine squares, one very sturdy bag",
-      "description": "Sixteen granny squares joined with a flat slip stitch, then a round of single crochet around the join so the seam disappears into the fabric. Open at the top, lined with a plain cotton panel so it holds its shape when it is not full of yarn.\n\n38 cm wide, 34 cm tall, with 24 cm handles.",
-      "priceCents": 5200,
-      "compareAtCents": 6200,
-      "category": "bags",
-      "images": [
-        "/images/products/granny-square-tote-bag.svg"
-      ],
-      "details": {
-        "Finished size": "38 × 34 cm, 24 cm handles",
-        "Yarn": "Cotton + acrylic, aran weight",
-        "Stitch": "Granny square, joined",
-        "Lining": "Cotton poplin panel",
-        "Care": "Machine wash cold, dry flat"
-      },
-      "stock": 6,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 20,
-      "createdAt": "2026-05-30T11:14:06.970Z",
-      "updatedAt": "2026-05-30T11:14:06.970Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000003",
-      "slug": "chain-strap-shoulder-purse",
-      "name": "Chain strap shoulder purse",
-      "tagline": "The chain is the strap",
-      "description": "No sewing involved. The body is a tapered tube worked in joined rounds, and the strap is a length of chain stitched straight into the top edge — so the whole bag is one continuous piece of yarn from the first loop.\n\nSits on the shoulder or crossbody depending on how you drape it.",
-      "priceCents": 3800,
-      "compareAtCents": null,
-      "category": "purses",
-      "images": [
-        "/images/products/chain-strap-shoulder-purse.svg"
-      ],
-      "details": {
-        "Finished size": "18 cm wide, 15 cm tall, 52 cm strap",
-        "Yarn": "Cotton, aran weight",
-        "Stitch": "Magic ring, joined rounds",
-        "Hardware": "One toggle button",
-        "Care": "Hand wash, dry flat"
-      },
-      "stock": 9,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 30,
-      "createdAt": "2026-08-17T11:14:06.970Z",
-      "updatedAt": "2026-08-17T11:14:06.970Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000004",
-      "slug": "everlasting-rose-bouquet",
-      "name": "Everlasting rose bouquet",
-      "tagline": "Five roses that outlive the vase",
-      "description": "Crocheted roses on wire stems, wrapped in a band of leaves and a raffia tie. Because the flowers are stitched rather than pressed, the petals hold their curve for years — which makes these the ones people keep.\n\nStems are wire, so you can fan them, bend them, or trim them down.",
-      "priceCents": 4400,
-      "compareAtCents": null,
-      "category": "bouquets",
-      "images": [
-        "/images/products/everlasting-rose-bouquet.svg"
-      ],
-      "details": {
-        "Contents": "5 roses, 9 leaves, raffia tie",
-        "Stem length": "42 cm, cuttable",
-        "Yarn": "Cotton, 4 ply",
-        "Wire": "22 gauge, florist tape",
-        "Care": "Keep dry. Dust with a soft brush."
-      },
-      "stock": 12,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 40,
-      "createdAt": "2026-09-19T11:14:06.970Z",
-      "updatedAt": "2026-09-19T11:14:06.970Z",
-      "sale": {
-        "bannerId": "feca65e4-2787-4d11-bf86-3639d53c3af7",
-        "bannerSlug": "back-to-school-0uf1",
-        "bannerName": "Back to school 2026",
-        "headline": "New term, new charms",
-        "template": "stitch-strip",
-        "percentOff": 15,
-        "code": "TERM15",
-        "salePriceCents": 3740,
-        "endsAt": "2026-10-04T11:14:06.986Z"
-      }
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000005",
-      "slug": "daisy-chain-wall-hanging",
-      "name": "Daisy chain wall hanging",
-      "tagline": "A row of daisies, worked flat",
-      "description": "Flat, not tubular — each daisy sits on a chain spine so the whole thing hangs flat against a wall. Worked in rounds that taper from the centre daisy outward, so the outer ones are a little smaller.\n\nAbout 70 cm long. Needs one nail and nothing else.",
-      "priceCents": 2900,
-      "compareAtCents": null,
-      "category": "bouquets",
-      "images": [
-        "/images/products/daisy-chain-wall-hanging.svg"
-      ],
-      "details": {
-        "Finished size": "70 cm long, 18 cm at the widest",
-        "Yarn": "Cotton, DK weight",
-        "Stitch": "Chain spine, flat rounds",
-        "Mounting": "One picture hook",
-        "Care": "Do not wash"
-      },
-      "stock": 4,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 50,
-      "createdAt": "2026-06-24T11:14:06.970Z",
-      "updatedAt": "2026-06-24T11:14:06.970Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000006",
-      "slug": "bobble-frog-keyring",
-      "name": "Bobble frog keyring",
-      "tagline": "Small, green, slightly judgemental",
-      "description": "A frog in two greens with a bobbled back, because bobble stitch is the most satisfying thing to work and also the slowest. Roughly 6 cm tall.\n\nOrder it in two greens of your choosing, or let me pick.",
-      "priceCents": 1200,
-      "compareAtCents": null,
-      "category": "keychains",
-      "images": [
-        "/images/products/bobble-frog-keyring.svg"
-      ],
-      "details": {
-        "Finished size": "6 cm tall",
-        "Yarn": "Cotton, DK weight",
-        "Stitch": "Bobble + single crochet",
-        "Hardware": "Split keyring",
-        "Care": "Spot clean"
-      },
-      "stock": 2,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 60,
-      "createdAt": "2026-08-24T11:14:06.970Z",
-      "updatedAt": "2026-08-24T11:14:06.970Z",
-      "sale": {
-        "bannerId": "feca65e4-2787-4d11-bf86-3639d53c3af7",
-        "bannerSlug": "back-to-school-0uf1",
-        "bannerName": "Back to school 2026",
-        "headline": "New term, new charms",
-        "template": "stitch-strip",
-        "percentOff": 15,
-        "code": "TERM15",
-        "salePriceCents": 1020,
-        "endsAt": "2026-10-04T11:14:06.986Z"
-      }
     },
     {
       "id": "11111111-1111-4111-8111-000000000007",
@@ -424,27 +229,15 @@
       "code": "TERM15",
       "tint": null,
       "productIds": [
-        "11111111-1111-4111-8111-000000000006",
-        "11111111-1111-4111-8111-000000000008",
-        "11111111-1111-4111-8111-000000000004"
+        "11111111-1111-4111-8111-000000000008"
       ],
       "startsAt": "2026-09-27T11:14:06.986Z",
       "endsAt": "2026-10-04T11:14:06.986Z",
       "revision": 0,
       "rationale": "Back to school is in season and inside its 21-day lead window. Using the **Stitch strip** component, which reads best for a dated celebration. Offer set to 15% off, attached to the 4 highest-scoring product(s). Headroom check: Strawberry coin purse keychain (~25%), Bobble frog keyring (~25%), Raffia summer bucket bag (~26%), Everlasting rose bouquet (~25%).",
       "createdAt": "2026-09-27T11:14:06.986Z",
-      "updatedAt": "2026-09-27T12:10:18.387Z",
+      "updatedAt": "2026-09-27T12:15:50.100Z",
       "products": [
-        {
-          "id": "11111111-1111-4111-8111-000000000006",
-          "slug": "bobble-frog-keyring",
-          "name": "Bobble frog keyring",
-          "priceCents": 1200,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/bobble-frog-keyring.svg"
-          ]
-        },
         {
           "id": "11111111-1111-4111-8111-000000000008",
           "slug": "raffia-summer-bucket-bag",
@@ -453,16 +246,6 @@
           "compareAtCents": 7000,
           "images": [
             "/images/products/raffia-summer-bucket-bag.svg"
-          ]
-        },
-        {
-          "id": "11111111-1111-4111-8111-000000000004",
-          "slug": "everlasting-rose-bouquet",
-          "name": "Everlasting rose bouquet",
-          "priceCents": 4400,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/everlasting-rose-bouquet.svg"
           ]
         }
       ],
