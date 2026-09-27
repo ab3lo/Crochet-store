@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T12:58:06.295Z",
+  "generatedAt": "2026-09-27T13:20:47.835Z",
   "products": [
     {
       "id": "01162327-b888-4d89-8a0c-7e93898121ba",
@@ -19,7 +19,7 @@
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:43.374Z",
-      "updatedAt": "2026-09-27T12:58:00.355Z",
+      "updatedAt": "2026-09-27T13:17:43.815Z",
       "sale": null
     },
     {
@@ -42,197 +42,6 @@
       "createdAt": "2026-09-27T12:57:02.667Z",
       "updatedAt": "2026-09-27T12:57:05.272Z",
       "sale": null
-    },
-    {
-      "id": "5ad6a89b-9a8a-44bf-8c83-4973453b93f2",
-      "slug": "jellyfish-keychain",
-      "name": "Jellyfish Keychain",
-      "tagline": "A tiny friend for your bags and keys",
-      "description": "",
-      "priceCents": 25000,
-      "compareAtCents": null,
-      "category": "keychains",
-      "images": [
-        "/images/products/jellyfish-keychain-552cc8d596.png"
-      ],
-      "details": {},
-      "stock": 0,
-      "madeToOrder": true,
-      "hidden": false,
-      "sortOrder": 0,
-      "createdAt": "2026-09-27T12:09:56.742Z",
-      "updatedAt": "2026-09-27T12:14:24.983Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000007",
-      "slug": "custom-bouquet-in-your-colours",
-      "name": "Custom bouquet in your colours",
-      "tagline": "Tell me the palette, I will follow it",
-      "description": "Any size, any number of stems, matched to colours you send me. Send a screenshot of an outfit, a wedding scheme, or just four hex codes that make you happy, and I will come back with a photo of the swatches before I start the flowers.",
-      "priceCents": 6500,
-      "compareAtCents": null,
-      "category": "custom",
-      "images": [
-        "/images/products/custom-bouquet-in-your-colours.svg"
-      ],
-      "details": {
-        "Lead": "2–3 weeks",
-        "Includes": "Colour matching, swatch photo",
-        "Minimum spend": "From 65.00",
-        "Colours": "Up to five in the bouquet"
-      },
-      "stock": 0,
-      "madeToOrder": true,
-      "hidden": false,
-      "sortOrder": 70,
-      "createdAt": "2026-08-28T11:14:06.970Z",
-      "updatedAt": "2026-08-28T11:14:06.970Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000008",
-      "slug": "raffia-summer-bucket-bag",
-      "name": "Raffia summer bucket bag",
-      "tagline": "Straw-coloured, open, unbothered",
-      "description": "Worked in raffia yarn in a continuous spiral, which is why there are no seams at all. Drawstring at the top — knot it loose for a pouch, tight for a bucket.\n\nThis one takes a few days longer because the spiral is long.",
-      "priceCents": 5800,
-      "compareAtCents": 7000,
-      "category": "bags",
-      "images": [
-        "/images/products/raffia-summer-bucket-bag.svg"
-      ],
-      "details": {
-        "Finished size": "30 cm diameter, 28 cm tall",
-        "Yarn": "Raffia, 4 mm",
-        "Stitch": "Continuous spiral",
-        "Closure": "Drawstring, self-fabric",
-        "Care": "Spot clean only"
-      },
-      "stock": 0,
-      "madeToOrder": true,
-      "hidden": false,
-      "sortOrder": 80,
-      "createdAt": "2026-09-09T11:14:06.970Z",
-      "updatedAt": "2026-09-09T11:14:06.970Z",
-      "sale": {
-        "bannerId": "feca65e4-2787-4d11-bf86-3639d53c3af7",
-        "bannerSlug": "back-to-school-0uf1",
-        "bannerName": "Back to school 2026",
-        "headline": "New term, new charms",
-        "template": "stitch-strip",
-        "percentOff": 15,
-        "code": "TERM15",
-        "salePriceCents": 4930,
-        "endsAt": "2026-10-04T11:14:06.986Z"
-      }
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000009",
-      "slug": "mini-clutch-with-button-flap",
-      "name": "Mini clutch with button flap",
-      "tagline": "Fits a phone, keys, and a lipstick",
-      "description": "A flat rectangle worked in a basketweave so it holds its shape without stiffening, with a flap and a wooden button sewn on rather than glued. Woven from a single chain, so again — no seams.\n\n20 cm across. Just big enough.",
-      "priceCents": 3400,
-      "compareAtCents": null,
-      "category": "purses",
-      "images": [
-        "/images/products/mini-clutch-with-button-flap.svg"
-      ],
-      "details": {
-        "Finished size": "20 × 12 cm",
-        "Yarn": "Cotton, sport weight",
-        "Stitch": "Basketweave, single crochet",
-        "Hardware": "Wooden button, sewn",
-        "Care": "Hand wash, dry flat"
-      },
-      "stock": 5,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 90,
-      "createdAt": "2026-08-06T11:14:06.970Z",
-      "updatedAt": "2026-08-06T11:14:06.970Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000010",
-      "slug": "peony-posy",
-      "name": "Peony posy",
-      "tagline": "Three heads, loose stems, no wrapping fuss",
-      "description": "Three peonies at slightly different sizes on thin stems, tied with a single bow of ribbon. The petals are worked in a few quick rounds and then left unblocked on purpose — peonies look better slightly rumpled.\n\n22 cm tall in the vase.",
-      "priceCents": 2600,
-      "compareAtCents": null,
-      "category": "bouquets",
-      "images": [
-        "/images/products/peony-posy.svg"
-      ],
-      "details": {
-        "Contents": "3 peonies, ribbon tie",
-        "Vase height": "22 cm",
-        "Yarn": "Cotton, 4 ply",
-        "Stems": "Wrapped wire",
-        "Care": "Keep dry"
-      },
-      "stock": 7,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 100,
-      "createdAt": "2026-07-13T11:14:06.970Z",
-      "updatedAt": "2026-07-13T11:14:06.970Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000011",
-      "slug": "two-tone-heart-keychain",
-      "name": "Two-tone heart keychain",
-      "tagline": "The easy one. Good first crochet gift.",
-      "description": "Half a heart, two rows, finished. One of the first things I ever made and still the one I sell most of to people learning. Slightly wonky by nature — the two halves are joined with a slip stitch so the seam shows a little.\n\n5 cm. Very cheap, very cheerful.",
-      "priceCents": 800,
-      "compareAtCents": null,
-      "category": "keychains",
-      "images": [
-        "/images/products/two-tone-heart-keychain.svg"
-      ],
-      "details": {
-        "Finished size": "5 cm",
-        "Yarn": "Cotton, 4 ply",
-        "Stitch": "Two rows, slip-stitch join",
-        "Hardware": "Split keyring",
-        "Care": "Spot clean"
-      },
-      "stock": 24,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 110,
-      "createdAt": "2026-04-30T11:14:06.970Z",
-      "updatedAt": "2026-04-30T11:14:06.970Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000012",
-      "slug": "commission-a-market-tote",
-      "name": "Commission a market tote",
-      "tagline": "Your colours, your size, a name on the label",
-      "description": "The granny square tote made to order in the yarn and size you want, with a stitched leather label if you would like one. Send three or four colours and roughly how big it needs to be; I will confirm before starting.\n\nThree to four weeks from the time we agree.",
-      "priceCents": 7800,
-      "compareAtCents": null,
-      "category": "custom",
-      "images": [
-        "/images/products/commission-a-market-tote.svg"
-      ],
-      "details": {
-        "Lead": "3–4 weeks",
-        "Includes": "Custom yarn colours, optional label",
-        "Minimum spend": "From 78.00",
-        "Sizing": "Made to your measurements"
-      },
-      "stock": 0,
-      "madeToOrder": true,
-      "hidden": false,
-      "sortOrder": 120,
-      "createdAt": "2026-09-05T11:14:06.970Z",
-      "updatedAt": "2026-09-05T11:14:06.970Z",
-      "sale": null
     }
   ],
   "banners": [
@@ -249,27 +58,14 @@
       "percentOff": 15,
       "code": "TERM15",
       "tint": null,
-      "productIds": [
-        "11111111-1111-4111-8111-000000000008"
-      ],
+      "productIds": [],
       "startsAt": "2026-09-27T11:14:06.986Z",
       "endsAt": "2026-10-04T11:14:06.986Z",
       "revision": 0,
       "rationale": "Back to school is in season and inside its 21-day lead window. Using the **Stitch strip** component, which reads best for a dated celebration. Offer set to 15% off, attached to the 4 highest-scoring product(s). Headroom check: Strawberry coin purse keychain (~25%), Bobble frog keyring (~25%), Raffia summer bucket bag (~26%), Everlasting rose bouquet (~25%).",
       "createdAt": "2026-09-27T11:14:06.986Z",
-      "updatedAt": "2026-09-27T12:15:50.100Z",
-      "products": [
-        {
-          "id": "11111111-1111-4111-8111-000000000008",
-          "slug": "raffia-summer-bucket-bag",
-          "name": "Raffia summer bucket bag",
-          "priceCents": 5800,
-          "compareAtCents": 7000,
-          "images": [
-            "/images/products/raffia-summer-bucket-bag.svg"
-          ]
-        }
-      ],
+      "updatedAt": "2026-09-27T13:20:24.281Z",
+      "products": [],
       "isLive": true,
       "salePriceCents": 0
     }
