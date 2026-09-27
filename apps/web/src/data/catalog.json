@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T13:22:38.289Z",
+  "generatedAt": "2026-09-27T13:27:51.902Z",
   "products": [
     {
       "id": "3b282034-151e-44e5-a228-c11f6b0fc672",
@@ -51,7 +51,7 @@
       "description": "",
       "priceCents": 250000,
       "compareAtCents": null,
-      "category": "keychains",
+      "category": "bags",
       "images": [
         "/images/products/floral-crochet-bag-eb3dcac590.png"
       ],
@@ -61,7 +61,7 @@
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:02.667Z",
-      "updatedAt": "2026-09-27T12:57:05.272Z",
+      "updatedAt": "2026-09-27T13:27:49.186Z",
       "sale": null
     }
   ],
