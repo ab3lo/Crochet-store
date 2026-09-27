@@ -1,6 +1,27 @@
 {
-  "generatedAt": "2026-09-27T13:20:47.835Z",
+  "generatedAt": "2026-09-27T13:21:41.259Z",
   "products": [
+    {
+      "id": "3b282034-151e-44e5-a228-c11f6b0fc672",
+      "slug": "jellyfish-keychain",
+      "name": "Jellyfish Keychain",
+      "tagline": "A tiny friend for your bags and keys",
+      "description": "",
+      "priceCents": 50000,
+      "compareAtCents": null,
+      "category": "keychains",
+      "images": [
+        "/images/products/jellyfish-keychain-552cc8d596.png"
+      ],
+      "details": {},
+      "stock": 0,
+      "madeToOrder": true,
+      "hidden": false,
+      "sortOrder": 0,
+      "createdAt": "2026-09-27T13:21:34.766Z",
+      "updatedAt": "2026-09-27T13:21:37.796Z",
+      "sale": null
+    },
     {
       "id": "01162327-b888-4d89-8a0c-7e93898121ba",
       "slug": "sunflower-tote",
