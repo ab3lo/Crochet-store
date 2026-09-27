@@ -4,6 +4,13 @@ dist/
 .output/
 .wrangler/
 
+# adapter-node's output. `dist/` and `.output/` are already ignored, but this
+# adapter writes to `build/`, and it only exists if someone runs
+# `bun run --cwd apps/admin build` — which the panel has no need for, since it
+# is run from the dev server. Left here so that running it locally cannot leave
+# a few hundred generated files waiting to be committed by accident.
+build/
+
 # SvelteKit's generated tree for the admin panel (apps/admin/.svelte-kit).
 #
 # Deleting it to "clear a cache" breaks the dev server outright: SvelteKit

@@ -11,12 +11,12 @@
     "export": "bun scripts/export.ts",
     "publish": "bun scripts/publish.ts",
     "db:reset": "bun scripts/reset.ts",
-    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check": "bun scripts/check.ts",
     "catalog:whatsapp": "bun scripts/catalog-whatsapp.ts"
   },
   "dependencies": {
-    "@crochet/shared": "workspace:*"
+    "@crochet/shared": "workspace:*",
+    "cookie": "^0.6.0"
   },
   "devDependencies": {
     "@crochet/web": "workspace:*",
@@ -29,7 +29,6 @@
     "svelte": "^5.57.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
-    "vite": "^8.3.1",
-    "svelte-check": "^4.1.0"
+    "vite": "^8.3.1"
   }
 }
