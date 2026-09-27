@@ -91,7 +91,13 @@
   let slugTouched = $state(!isNew);
   $effect(() => {
     if (slugTouched) return;
-    slug.value = name.value
+    // Svelte 5 `$state` declares a plain reactive variable — there is no
+    // `.value` to read. This used to say `slug.value = name.value…`, which
+    // threw `Cannot read properties of undefined` on every keystroke, so the
+    // slug never filled in, and a new product could not be saved: the payload
+    // went out with an empty slug and came back as an unexplained "please fix
+    // the highlighted fields" on a field that looked fine.
+    slug = name
       .toLowerCase()
       .normalize('NFKD')
       .replace(/[^a-z0-9]+/g, '-')
