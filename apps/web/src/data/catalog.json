@@ -1,6 +1,27 @@
 {
-  "generatedAt": "2026-09-27T12:17:05.623Z",
+  "generatedAt": "2026-09-27T12:18:59.781Z",
   "products": [
+    {
+      "id": "7cd7a14a-bfd1-4047-97fa-524be4e396ae",
+      "slug": "repro-piece-three",
+      "name": "Repro Piece Three",
+      "tagline": "repro",
+      "description": "repro description",
+      "priceCents": 999,
+      "compareAtCents": null,
+      "category": "keychains",
+      "images": [
+        "/images/products/repro-piece-three-f6a105885a.jpg"
+      ],
+      "details": {},
+      "stock": 0,
+      "madeToOrder": false,
+      "hidden": false,
+      "sortOrder": 0,
+      "createdAt": "2026-09-27T12:18:51.728Z",
+      "updatedAt": "2026-09-27T12:18:56.921Z",
+      "sale": null
+    },
     {
       "id": "f5d1c39a-30d2-4ede-898d-408c256ba26c",
       "slug": "repro-piece-two",
