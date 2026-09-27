@@ -23,10 +23,40 @@
   # policy delivered by <meta> cannot enforce it — browsers ignore it in a meta
   # tag. A policy only restricts what it names, so this header contributes that
   # single directive while Astro's meta tag contributes the rest.
-  Content-Security-Policy: frame-ancestors 'none'
+  #
+  # ── Framing ────────────────────────────────────────────────────────────
+  #
+  # The shop is embeddable in exactly one place: the portfolio at
+  # https://ab3lo.github.io. Everywhere else it refuses to be framed.
+  #
+  # Note what this can and cannot express. `frame-ancestors` takes **origins,
+  # not paths**, so this allows framing from `https://ab3lo.github.io` as a
+  # whole — which includes `/portfolio` and any other page on that domain. If
+  # only `/portfolio` specifically may frame the shop, the browser has no way to
+  # say so; that would take a `frame-ancestors` per response, which means
+  # serving different headers per path, and Cloudflare Pages `_headers` cannot
+  # vary a header's *value* by path. Treat the whole origin as trusted.
+  #
+  # `'self'` is deliberately absent. It would let the shop frame itself, which
+  # nothing does — the strict reading of "only in the portfolio" is the safer
+  # one, and adding it later is a one-word edit.
+  #
+  # Protocol matters: GitHub Pages serves the portfolio over HTTPS, so the scheme
+  # is `https`. Do not add `http://` — an http page embedding an https shop is
+  # itself mixed content and the browser will block it anyway.
+  Content-Security-Policy: frame-ancestors https://ab3lo.github.io
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
-  X-Frame-Options: DENY
+  # No `X-Frame-Options` here on purpose. It used to be `DENY`, which is the
+  # pre-CSP way of refusing framing — and it would have silently overridden
+  # the `frame-ancestors` above in any browser that only understands XFO,
+  # making the shop unembeddable everywhere.
+  #
+  # Where both are present, a browser that supports CSP ignores X-Frame-Options
+  # entirely; where only XFO is supported, the shop would be blocked. Deleting
+  # the header is what makes the allowlist actually take effect. The cost is
+  # that very old browsers, which honour neither, will allow framing — a
+  # negligible concern next to losing the embed you asked for.
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Cross-Origin-Opener-Policy: same-origin
