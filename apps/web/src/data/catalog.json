@@ -1,67 +1,46 @@
 {
-  "generatedAt": "2026-09-27T12:18:59.781Z",
+  "generatedAt": "2026-09-27T12:58:06.295Z",
   "products": [
     {
-      "id": "7cd7a14a-bfd1-4047-97fa-524be4e396ae",
-      "slug": "repro-piece-three",
-      "name": "Repro Piece Three",
-      "tagline": "repro",
-      "description": "repro description",
-      "priceCents": 999,
+      "id": "01162327-b888-4d89-8a0c-7e93898121ba",
+      "slug": "sunflower-tote",
+      "name": "Sunflower Tote",
+      "tagline": "An cute large size Octopus Keychain",
+      "description": "",
+      "priceCents": 30000,
       "compareAtCents": null,
       "category": "keychains",
       "images": [
-        "/images/products/repro-piece-three-f6a105885a.jpg"
+        "/images/products/sunflower-tote-19ee2ad2b2.png"
       ],
       "details": {},
       "stock": 0,
-      "madeToOrder": false,
+      "madeToOrder": true,
       "hidden": false,
       "sortOrder": 0,
-      "createdAt": "2026-09-27T12:18:51.728Z",
-      "updatedAt": "2026-09-27T12:18:56.921Z",
+      "createdAt": "2026-09-27T12:57:43.374Z",
+      "updatedAt": "2026-09-27T12:58:00.355Z",
       "sale": null
     },
     {
-      "id": "f5d1c39a-30d2-4ede-898d-408c256ba26c",
-      "slug": "repro-piece-two",
-      "name": "Repro Piece Two",
-      "tagline": "repro",
-      "description": "repro description",
-      "priceCents": 1250,
+      "id": "626d32c5-d1ff-4ddd-908d-431ea34d969e",
+      "slug": "floral-crochet-bag",
+      "name": "Floral crochet Bag",
+      "tagline": "Purse sized",
+      "description": "",
+      "priceCents": 250000,
       "compareAtCents": null,
       "category": "keychains",
       "images": [
-        "/images/products/repro-piece-two-f6a105885a.jpg"
+        "/images/products/floral-crochet-bag-eb3dcac590.png"
       ],
       "details": {},
       "stock": 0,
-      "madeToOrder": false,
+      "madeToOrder": true,
       "hidden": false,
       "sortOrder": 0,
-      "createdAt": "2026-09-27T12:16:55.703Z",
-      "updatedAt": "2026-09-27T12:17:01.366Z",
-      "sale": null
-    },
-    {
-      "id": "bae15535-f229-4ae5-8e78-5115580039d1",
-      "slug": "repro-piece",
-      "name": "Repro Piece",
-      "tagline": "repro",
-      "description": "repro description",
-      "priceCents": 1250,
-      "compareAtCents": null,
-      "category": "keychains",
-      "images": [
-        "/images/products/repro-piece-f6a105885a.jpg"
-      ],
-      "details": {},
-      "stock": 0,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 0,
-      "createdAt": "2026-09-27T12:15:11.413Z",
-      "updatedAt": "2026-09-27T12:15:11.548Z",
+      "createdAt": "2026-09-27T12:57:02.667Z",
+      "updatedAt": "2026-09-27T12:57:05.272Z",
       "sale": null
     },
     {
