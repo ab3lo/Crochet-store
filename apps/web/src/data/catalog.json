@@ -1,6 +1,25 @@
 {
-  "generatedAt": "2026-09-27T14:01:47.562Z",
+  "generatedAt": "2026-09-27T14:32:15.264Z",
   "products": [
+    {
+      "id": "9708e77e-0c57-4553-b8fb-d57dbef5dbec",
+      "slug": "was-price-check",
+      "name": "Was Price Check",
+      "tagline": "",
+      "description": "",
+      "priceCents": 250000,
+      "compareAtCents": 500000,
+      "category": "keychains",
+      "images": [],
+      "details": {},
+      "stock": 0,
+      "madeToOrder": false,
+      "hidden": false,
+      "sortOrder": 0,
+      "createdAt": "2026-09-27T14:29:17.345Z",
+      "updatedAt": "2026-09-27T14:29:17.345Z",
+      "sale": null
+    },
     {
       "id": "3b282034-151e-44e5-a228-c11f6b0fc672",
       "slug": "jellyfish-keychain",
@@ -65,30 +84,5 @@
       "sale": null
     }
   ],
-  "banners": [
-    {
-      "id": "feca65e4-2787-4d11-bf86-3639d53c3af7",
-      "slug": "back-to-school-0uf1",
-      "name": "Back to school 2026",
-      "template": "bloom",
-      "status": "live",
-      "headline": "New term, new charms",
-      "subhead": "Clip a bag, a pencil case, a best friend",
-      "ctaLabel": "Shop the drop",
-      "ctaHref": "/strawberry-coin-purse-keychain",
-      "percentOff": 15,
-      "code": "TERM15",
-      "tint": null,
-      "productIds": [],
-      "startsAt": "2026-09-27T11:14:06.986Z",
-      "endsAt": "2026-10-04T11:14:06.986Z",
-      "revision": 2,
-      "rationale": "Back to school is in season and inside its 21-day lead window. Using the **Stitch strip** component, which reads best for a dated celebration. Offer set to 15% off, attached to the 4 highest-scoring product(s). Headroom check: Strawberry coin purse keychain (~25%), Bobble frog keyring (~25%), Raffia summer bucket bag (~26%), Everlasting rose bouquet (~25%).",
-      "createdAt": "2026-09-27T11:14:06.986Z",
-      "updatedAt": "2026-09-27T14:01:45.956Z",
-      "products": [],
-      "isLive": true,
-      "salePriceCents": 0
-    }
-  ]
+  "banners": []
 }
