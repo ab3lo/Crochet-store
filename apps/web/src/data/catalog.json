@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T14:32:15.264Z",
+  "generatedAt": "2026-09-27T14:32:45.890Z",
   "products": [
     {
       "id": "9708e77e-0c57-4553-b8fb-d57dbef5dbec",
@@ -69,7 +69,7 @@
       "tagline": "Purse sized",
       "description": "",
       "priceCents": 300000,
-      "compareAtCents": null,
+      "compareAtCents": 400000,
       "category": "bags",
       "images": [
         "/images/products/floral-crochet-bag-eb3dcac590.png"
@@ -80,7 +80,7 @@
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:02.667Z",
-      "updatedAt": "2026-09-27T13:58:47.634Z",
+      "updatedAt": "2026-09-27T14:32:40.479Z",
       "sale": null
     }
   ],
