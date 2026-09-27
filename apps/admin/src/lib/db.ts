@@ -1,77 +1,53 @@
 /**
  * SQLite access layer — the shop's only datastore.
  *
- * ## Why SQLite and not Postgres
+ * Twelve rows today, a few hundred at most. Written by one person on one
+ * machine, read by `astro build` from a committed JSON file. None of that needs
+ * a server, a pool, a service-role key or a monthly bill.
  *
- * The catalogue is a shop's worth of products: twelve rows today, a few
- * hundred at most. It is written by one person, on one machine, and read by
- * `astro build` from a committed JSON file. None of that needs a database
- * server, a connection pool, a service-role key or a monthly bill.
- *
- * ## Why this file exists
- *
- * It is the port of `apps/api/src/db.ts`, which was deleted along with the
- * API. The shape of the data is unchanged — same columns, same contracts, same
- * mapper functions — so the storefront cannot tell the difference, and
- * `catalog.json` still exports byte-identical `ProductView` / `BannerView`
- * objects.
- *
- * ## The four Postgres features that had no SQLite equivalent
- *
- * 1. **Arrays.** `products.images` and `banners.product_ids` are `TEXT`
- *    holding a JSON array. `bun:sqlite` has no array type and SQLite has no
- *    array type either. Every read goes through `parseJsonArray`, every write
- *    through `stringifyJsonArray`, so a malformed value can never escape into
- *    a page. This is the one place where a future refactor could silently
- *    corrupt data, so both helpers fail loudly rather than returning a
- *    default.
- *
- * 2. **jsonb.** `details` and `tint` are `TEXT` holding JSON, for the same
- *    reason.
- *
- * 3. **Timestamps.** `TEXT` in ISO-8601 UTC. The mappers already called
- *    `.toISOString()`, so this costs nothing — but the *comparison* semantics
- *    matter: ISO-8601 with a `Z` suffix sorts lexicographically in the same
- *    order it sorts chronologically, which is what `activeBanners` relies on
- *    when it compares `starts_at <= ?`. That is only true while every row is
- *    written through `nowIso()`; a row inserted by hand with a local time and
- *    no zone would break it.
- *
- * 4. **Regex CHECK constraints.** Postgres could enforce `url ~ '^https?://'`
- *    and `code ~ '^[A-Z0-9-]{3,24}$'` in the schema. SQLite has no regex in
- *    CHECK, so those checks moved to Zod — `imageUrlSchema` and
- *    `bannerInputSchema` in `@crochet/shared` already do exactly this on the
- *    write path, so validation is enforced at the application layer and is, if
- *    anything, stricter than before (it reports which field failed).
- *
- * Also gone, deliberately: `pg_trgm` (a trigram index to search twelve rows —
- * `LIKE '%x%'` is instant at this size) and the partial index on
- * `hidden = false` (a plain index serves a table this small), and the
- * `touch_updated_at()` trigger, which becomes an assignment in the write path.
- *
- * ## Concurrency
- *
- * One process, one writer, WAL mode. The panel is a single-user tool on a
- * single machine; there is no second writer to lose an update to.
+ * This is the port of `apps/api/src/db.ts`, deleted with the API. Same columns,
+ * same contracts, same mappers — so `catalog.json` still exports the same
+ * `ProductView` / `BannerView` objects and the storefront cannot tell.
  *
  * ## Why `node:sqlite` and not `bun:sqlite`
  *
- * `bun:sqlite` was the first choice and it works — but Vite loads SSR modules
- * through Node's ESM resolver, which does not understand the `bun:` scheme and
- * fails with `ERR_UNSUPPORTED_ESM_URL_SCHEME` before any of this code runs.
- * Running the whole dev server under Bun does not help, because the failure is
- * in Vite's module loader rather than the shell.
+ * Vite loads SSR modules through Node's ESM resolver, which does not
+ * understand the `bun:` scheme and fails with `ERR_UNSUPPORTED_ESM_URL_SCHEME`
+ * before this code runs. Running the dev server under Bun does not help — the
+ * failure is in Vite's loader, not the shell. `node:sqlite` is stable in Node
+ * 24, needs no `node-gyp`, and behaves identically under Bun, so the panel runs
+ * under whichever is on the PATH. For the file that holds the shop's data,
+ * "works under both" beats "requires Bun".
  *
- * `node:sqlite` is stable in Node 24, needs no native build and no
- * `node-gyp`, and behaves identically under Bun — so the panel runs under
- * whichever of the two is on the PATH. For the one file that holds the shop's
- * data, "works under both" is a better property than "requires Bun".
+ * It is not quite the `bun:sqlite` API, so the adapter below supplies the three
+ * things used here: `db.query(sql)` with `.all`/`.get`/`.run`, `db.exec`, and
+ * `db.transaction`. Statements are cached — the panel re-runs the same queries
+ * on every keystroke, and re-preparing is waste.
  *
- * `node:sqlite` is not quite the `bun:sqlite` API, so the adapter below
- * provides the three things the rest of this file uses: `db.query(sql)` with
- * `.all`/`.get`/`.run`, `db.exec`, and `db.transaction`. Prepared statements
- * are cached because the panel re-runs the same handful of queries on every
- * keystroke in a search box, and re-preparing them each time is pure waste.
+ * ## Four Postgres features with no SQLite equivalent
+ *
+ * 1. **Arrays.** `images` and `product_ids` are `TEXT` holding a JSON array.
+ *    Reads go through `parseJsonArray` and writes through the stringify helper;
+ *    both fail loudly rather than defaulting, because a corrupt array silently
+ *    becoming `[]` would empty a gallery with no error anywhere.
+ * 2. **jsonb.** `details` and `tint` are `TEXT` holding JSON, same reason.
+ * 3. **Timestamps.** `TEXT` in ISO-8601 UTC, which the mappers already
+ *    produced. Comparison semantics matter: ISO-8601 with a `Z` sorts
+ *    lexicographically in the same order it sorts chronologically, which is
+ *    what `activeBanners` relies on. True only while every row is written
+ *    through `nowIso()` — a hand-inserted local time would break it.
+ * 4. **Regex CHECKs.** Postgres could enforce `url ~ '^https?://'` in the
+ *    schema. SQLite has no regex in CHECK, so these moved to Zod, which reports
+ *    *which* field failed — stricter than before.
+ *
+ * Also gone deliberately: `pg_trgm` (a trigram index to search twelve rows) and
+ * the partial index on `hidden = false`; and the `touch_updated_at()` trigger,
+ * which becomes an assignment in the write path.
+ *
+ * ## Concurrency
+ *
+ * One process, one writer, WAL mode. A single-user tool on a single machine has
+ * no second writer to lose an update to.
  */
 
 import { DatabaseSync } from 'node:sqlite';

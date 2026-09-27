@@ -1,21 +1,18 @@
 /**
  * The response envelope, and nothing else.
  *
- * ## Why the envelope survived the port
+ * The panel's components unwrap `{ ok, data }` / `{ ok, error, fields }` in one
+ * function (`lib/api.ts`) and deal in `AdminResult` everywhere else. One code
+ * path for failures, and a per-field `fields` map that lets a form highlight
+ * the input that was wrong instead of printing a sentence.
  *
- * The panel's components unwrap `{ ok, data }` / `{ ok, error, fields }` in
- * one function (`lib/api.ts`) and deal in `AdminResult` everywhere else. The
- * deleted API used the same shape for a good reason: one code path for every
- * failure, and a per-field `fields` map that lets a form highlight the input
- * that was wrong instead of printing a sentence.
- *
- * Both are worth keeping, and keeping them is what allowed 2,600 lines of
- * components to move across unchanged. What did *not* survive is everything
- * the envelope existed to serve in a hostile environment: CORS negotiation,
+ * Keeping that envelope is what allowed 2,600 lines of components to move
+ * across from the deleted API unchanged. What did *not* survive is what the
+ * envelope existed to serve in a hostile environment: CORS negotiation,
  * `clientIp`, rate limiting, status-code juggling for anonymous callers,
- * session guards. None of that applies to a loopback-only tool, so this file
- * is a fraction of the size of `apps/api/src/lib/http.ts` and that is the
- * whole point of the migration.
+ * session guards. None of it applies to a loopback-only tool, so this file is a
+ * fraction of the size of `apps/api/src/lib/http.ts` — which is the point of
+ * the migration.
  */
 
 import { json } from '@sveltejs/kit';

@@ -5,43 +5,26 @@
  *
  * The brief was "no dependence on online compute", and an image host is an
  * online dependency even though it is not compute. Supabase Storage was 83
- * lines and one service-role key; a CDN would have been better than it; R2 is
- * better still — and all three are a third party that can be slow, down,
- * out of credit, or gone in two years, holding the pictures that *are* the
- * shop.
+ * lines and one service-role key; a CDN would have been better; R2 better
+ * still — and all three are a third party that can be slow, down, out of credit
+ * or gone in two years, holding the pictures that *are* the shop.
  *
- * A product photo is small (a few hundred KB), changes when the product
- * changes, and belongs in version control next to the product it belongs to.
- * Committing it means:
+ * A product photo is small, changes when the product changes, and belongs in
+ * version control next to the product. Committing it makes the image and the
+ * caption describing it one atomic change, so reverting a bad product also
+ * reverts its photo, and `git log --follow` answers "when did this change, and
+ * with what?".
  *
- *   • the image and the caption that describes it are one atomic change, so a
- *     revert of a bad product also reverts its photo;
- *   • `git log --follow` on a photo answers "when did this change, and with
- *     what?" — which is exactly the question you ask when a customer's order
- *     arrives and you need to know what they bought;
- *   • nothing to pay for, nothing to rotate, nothing to 404.
- *
- * The cost is repository size, and that is the trade to keep an eye on. See
- * `MAX_BYTES` and `normaliseName` below for the two things that actually
- * control it.
- *
- * ## What is written where
- *
- * `apps/web/public/images/products/` — `public/` because Astro copies it
- * verbatim to the build output, which is what makes the image a static file
- * with no processing step and no server. The path is identical in dev, in the
- * build, and on the live site, so nothing has to be rewritten between them.
+ * The cost is repository size. `MAX_BYTES` and `normaliseName` are the two
+ * things that actually control it.
  *
  * ## Why filenames are content-addressed
  *
- * `normaliseName` puts a short hash of the bytes in the filename. Two
- * consequences, both wanted:
- *
- *   1. Re-uploading a changed photo produces a *new* URL, so the immutable
- *      cache header in `public/_headers` stays correct. A stable filename
- *      whose bytes changed would be cached for a year at the old image.
- *   2. The original filename never reaches a public URL, so a photo called
- *      `final_v2_REAL copy.jpeg` does not become part of the shop's URL space.
+ * `normaliseName` puts a short hash of the bytes in the filename, so a changed
+ * photo gets a new URL and the immutable cache header stays correct — a stable
+ * filename whose bytes changed would be cached for a year at the old image. It
+ * also keeps the original filename out of the public URL space, so a photo
+ * called `final_v2_REAL copy.jpeg` never becomes part of the shop's URLs.
  */
 
 import { createHash } from 'node:crypto';

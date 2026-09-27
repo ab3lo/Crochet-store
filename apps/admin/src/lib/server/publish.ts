@@ -1,48 +1,41 @@
 /**
  * Publish: make the local catalogue edits visible on the live shop.
  *
- * ## The whole mechanism
+ *   SQLite → catalog.json → git commit → git push → Pages rebuilds
  *
- *   SQLite  →  catalog.json  →  git commit  →  git push  →  Pages rebuilds
- *
- * There is no deploy hook, no webhook and no callback. `git push` to the
- * production branch *is* the rebuild trigger, which means publishing uses the
- * same infrastructure that already deploys the code — no second system to
- * configure, no bearer-secret URL stored anywhere, and no way to burn build
- * minutes on a request that changes nothing.
+ * No deploy hook, no webhook, no callback. `git push` to the production branch
+ * *is* the rebuild trigger, so publishing reuses the infrastructure that
+ * already deploys the code — no second system, no bearer secret, and no way to
+ * spend build minutes on a change that changes nothing.
  *
  * ## The one rule that matters
  *
- * **`git add` is given explicit paths, never `-A`.**
- *
- * This is the highest-consequence line in the file. A blind `git add -A` would
- * sweep whatever else is in the working tree into a commit labelled with the
+ * **`git add` gets explicit paths, never `-A`.** A blind `-A` would sweep
+ * whatever else is in the working tree into a commit labelled with the
  * catalogue — a half-finished refactor, a debug print, a `.env` that slipped
  * past `.gitignore`. The catalogue is the shop; publishing it should be the
  * only thing a publish commit contains.
  *
  * ## What is *not* the panel's business
  *
- * Uncommitted work elsewhere in your repository does not block a publish, and
- * the panel does not mention it.
+ * Uncommitted work elsewhere in the repo does not block a publish and is not
+ * mentioned. An earlier version refused whenever the working tree was dirty
+ * anywhere and listed every unrelated file — noise, and the wrong thing to
+ * check.
  *
- * An earlier version refused to publish whenever the working tree was dirty
- * anywhere, and listed every unrelated file as a blocker. That was wrong twice
- * over: it was noise, and it was checking the wrong thing.
+ * What matters is the **index**: `git commit` without `-a` commits the index
+ * and nothing else, so unstaged work cannot reach a commit. Hence:
  *
- * The thing that actually matters is the **index**, because `git commit`
- * (without `-a`) commits the index and nothing else. Unstaged work is not in
- * the index and cannot reach the commit. So the guard is now:
- *
- *   1. if a foreign path is *already staged*, refuse and name it — it would be
- *      swept in by the commit;
+ *   1. a foreign path *already staged* → refuse and name it;
  *   2. stage only the catalogue and images, by explicit path;
- *   3. re-read the index and confirm it contains nothing else, before committing.
+ *   3. re-read the index and confirm nothing else is in it, before committing.
  *
- * Steps 1 and 3 are the same invariant seen from both sides, and between them
- * they guarantee the commit's contents regardless of the state of the working
- * tree. Unrelated uncommitted files are yours; they stay where they are, and
- * you commit them when you mean to.
+ * Steps 1 and 3 are one invariant from both sides, and together they fix the
+ * commit's contents regardless of the working tree. Unrelated uncommitted
+ * files are yours; they stay put until you commit them on purpose.
+ *
+ * The branch is named, not inferred: local was `master` while the remote and
+ * the Pages production branch are `main`.
  */
 
 import { execFile } from 'node:child_process';
@@ -79,33 +72,14 @@ export interface PublishOptions {
 }
 
 /**
- * `git status --porcelain -z` → clean relative paths.
- *
- * `-z` rather than the newline form, for two reasons that both bite in
- * practice:
- *
- *   • The newline form is ambiguous to parse. `XY path` is 2 status columns
- *     and a space, so `slice(3)` is right — but only if you do not `.trim()`
- *     the line first, and a trim looks harmless while silently eating the
- *     leading space of an unstaged ` M` entry and turning `bun.lock` into
- *     `un.lock`.
- *   • Renames are reported as `old -> new` on one line, which then has to be
- *     split on an arrow that is also legal in a filename.
- *
- * With `-z` the format is unambiguous: entries are NUL-separated and a rename
- * is *two* entries, the source then the destination. What we want to reason
- * about is always the destination — that is the path that will exist.
- */
-/**
  * The files currently in the git index — i.e. exactly what `git commit` would
  * commit, since `git commit` without `-a` commits the index and nothing else.
  *
  * This is the only list that matters to a publish, and it is the entire basis
- * of the safety check below. Note how much simpler it is than parsing
- * `git status --porcelain -z`: no status columns to slice off, no rename
- * arrows, no NUL splitting, no quoting rules to get wrong. An earlier version
- * checked the *working tree* instead, which took ~35 lines of `--porcelain -z`
- * parsing to answer a question that does not matter.
+ * of the safety check below. An earlier version checked the *working tree*
+ * instead, via `git status --porcelain -z` — which took ~35 lines of status
+ * column and rename-arrow parsing to answer a question that does not matter,
+ * and whose output was easy to mangle by accident.
  */
 async function stagedPaths(): Promise<string[]> {
   const out = await git(['diff', '--cached', '--name-only']);

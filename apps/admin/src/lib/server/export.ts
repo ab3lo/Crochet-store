@@ -1,33 +1,26 @@
 /**
  * Regenerate `apps/web/src/data/catalog.json` from SQLite.
  *
- * This module is the boundary between the admin panel and the storefront. The
- * panel owns a database; `astro build` owns a JSON file; this is the only
- * thing that crosses between them.
+ * The boundary between the admin panel and the storefront: the panel owns a
+ * database, `astro build` owns a JSON file, this is the only thing that crosses.
  *
  * ## Why JSON and not the database
  *
- * The SSG's build container has no reason to have a SQLite driver, no reason to
- * have the shop owner's catalogue, and no ability to run migrations. A
- * committed JSON file means:
+ * The build container has no reason to have a SQLite driver, the shop's
+ * catalogue, or the ability to run migrations. A committed JSON file means the
+ * build cannot fail because a datastore is unavailable — which was why the
+ * original design had a `catalog.json` *fallback*, now promoted from fallback to
+ * the only input — and that a catalogue change shows up in `git diff` as
+ * reviewable JSON whose merge conflicts name the product that disagrees.
  *
- *   • the build cannot fail because a datastore is unavailable — which was the
- *     entire reason the original design had a `catalog.json` *fallback*, now
- *     promoted from fallback to the only input;
- *   • a catalogue change shows up in `git diff` as readable JSON, so it can be
- *     reviewed before it ships;
- *   • a merge conflict names the product that disagrees, instead of being an
- *     opaque binary blob.
- *
- * The `.sqlite` file itself is gitignored and never committed. That is not an
- * oversight — see the note in `lib/db.ts`.
+ * The `.sqlite` file is gitignored and never committed; that is deliberate.
  *
  * ## Determinism
  *
- * `generatedAt` changes on every run, which would make every commit dirty even
- * when nothing about the catalogue changed. It is therefore only refreshed when
- * the content actually differs, so publishing an unchanged database is a
- * genuine no-op and the git log means something.
+ * `generatedAt` changes every run, which would make every commit dirty even
+ * when the catalogue is unchanged. It is only refreshed when the content
+ * actually differs, so publishing an unchanged database is a genuine no-op and
+ * the git log means something.
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
