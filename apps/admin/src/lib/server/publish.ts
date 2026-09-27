@@ -193,7 +193,7 @@ export async function publish(opts: PublishOptions = {}): Promise<PublishResult>
       return {
         state: 'committed-not-pushed',
         commit,
-        files: stagedFiles,
+        files: staged,
         message:
           `Saved and committed as ${commit}, but the push failed — the site has not changed ` +
           `yet. Your change is safe; run \`git push origin HEAD:${PRODUCTION_BRANCH}\` when you ` +
@@ -204,7 +204,7 @@ export async function publish(opts: PublishOptions = {}): Promise<PublishResult>
     return {
       state: 'pushed',
       commit,
-      files: stagedFiles,
+      files: staged,
       message:
         `Published as ${commit} and pushed to ${PRODUCTION_BRANCH}. The site is rebuilding now — ` +
         `live in a couple of minutes. Nothing reaches the shop until that build finishes.`,
