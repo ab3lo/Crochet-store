@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-25T09:59:30.369Z",
+  "generatedAt": "2026-09-27T09:15:51.963Z",
   "products": [
     {
       "id": "11111111-1111-4111-8111-000000000001",
@@ -7,7 +7,7 @@
       "name": "Strawberry coin purse keychain",
       "tagline": "Holds a folded note, or a secret",
       "description": "The one that started the whole shop. Worked in a tight single crochet so it holds its shape in a pocket, with a chain loop and a brass lobster clasp. The seed at the crown is embroidered rather than stitched on, so it will not work loose.\n\nAbout 7 cm across. Cotton yarn, stuffed with fibrefill.",
-      "priceCents": 1400,
+      "priceCents": 1350,
       "compareAtCents": null,
       "category": "keychains",
       "images": [
@@ -24,19 +24,9 @@
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 10,
-      "createdAt": "2026-07-23T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
-      "sale": {
-        "bannerId": "00000000-0000-4000-8000-000000000001",
-        "bannerSlug": "scarcity-keychains",
-        "bannerName": "Scarcity — keychains",
-        "headline": "Last few keychains",
-        "template": "marquee",
-        "percentOff": 20,
-        "code": "SCARCITY20",
-        "salePriceCents": 1120,
-        "endsAt": "2026-10-02T18:59:59.999Z"
-      }
+      "createdAt": "2026-07-24T13:12:23.311Z",
+      "updatedAt": "2026-09-27T09:15:51.834Z",
+      "sale": null
     },
     {
       "id": "11111111-1111-4111-8111-000000000002",
@@ -61,8 +51,8 @@
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 20,
-      "createdAt": "2026-05-28T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
+      "createdAt": "2026-05-29T13:12:23.311Z",
+      "updatedAt": "2026-05-29T13:12:23.311Z",
       "sale": null
     },
     {
@@ -88,8 +78,8 @@
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 30,
-      "createdAt": "2026-08-15T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
+      "createdAt": "2026-08-16T13:12:23.312Z",
+      "updatedAt": "2026-08-16T13:12:23.312Z",
       "sale": null
     },
     {
@@ -115,8 +105,8 @@
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 40,
-      "createdAt": "2026-09-17T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
+      "createdAt": "2026-09-18T13:12:23.312Z",
+      "updatedAt": "2026-09-18T13:12:23.312Z",
       "sale": null
     },
     {
@@ -142,19 +132,9 @@
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 50,
-      "createdAt": "2026-06-22T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
-      "sale": {
-        "bannerId": "00000000-0000-4000-8000-000000000001",
-        "bannerSlug": "scarcity-keychains",
-        "bannerName": "Scarcity — keychains",
-        "headline": "Last few keychains",
-        "template": "marquee",
-        "percentOff": 20,
-        "code": "SCARCITY20",
-        "salePriceCents": 2320,
-        "endsAt": "2026-10-02T18:59:59.999Z"
-      }
+      "createdAt": "2026-06-23T13:12:23.312Z",
+      "updatedAt": "2026-06-23T13:12:23.312Z",
+      "sale": null
     },
     {
       "id": "11111111-1111-4111-8111-000000000006",
@@ -179,19 +159,9 @@
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 60,
-      "createdAt": "2026-08-22T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
-      "sale": {
-        "bannerId": "00000000-0000-4000-8000-000000000001",
-        "bannerSlug": "scarcity-keychains",
-        "bannerName": "Scarcity — keychains",
-        "headline": "Last few keychains",
-        "template": "marquee",
-        "percentOff": 20,
-        "code": "SCARCITY20",
-        "salePriceCents": 960,
-        "endsAt": "2026-10-02T18:59:59.999Z"
-      }
+      "createdAt": "2026-08-23T13:12:23.312Z",
+      "updatedAt": "2026-08-23T13:12:23.312Z",
+      "sale": null
     },
     {
       "id": "11111111-1111-4111-8111-000000000007",
@@ -215,8 +185,8 @@
       "madeToOrder": true,
       "hidden": false,
       "sortOrder": 70,
-      "createdAt": "2026-08-26T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
+      "createdAt": "2026-08-27T13:12:23.312Z",
+      "updatedAt": "2026-08-27T13:12:23.312Z",
       "sale": null
     },
     {
@@ -242,8 +212,8 @@
       "madeToOrder": true,
       "hidden": false,
       "sortOrder": 80,
-      "createdAt": "2026-09-07T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
+      "createdAt": "2026-09-08T13:12:23.312Z",
+      "updatedAt": "2026-09-08T13:12:23.312Z",
       "sale": null
     },
     {
@@ -269,72 +239,8 @@
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 90,
-      "createdAt": "2026-08-04T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
-      "sale": {
-        "bannerId": "00000000-0000-4000-8000-000000000001",
-        "bannerSlug": "scarcity-keychains",
-        "bannerName": "Scarcity — keychains",
-        "headline": "Last few keychains",
-        "template": "marquee",
-        "percentOff": 20,
-        "code": "SCARCITY20",
-        "salePriceCents": 2720,
-        "endsAt": "2026-10-02T18:59:59.999Z"
-      }
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000010",
-      "slug": "peony-posy",
-      "name": "Peony posy",
-      "tagline": "Three heads, loose stems, no wrapping fuss",
-      "description": "Three peonies at slightly different sizes on thin stems, tied with a single bow of ribbon. The petals are worked in a few quick rounds and then left unblocked on purpose — peonies look better slightly rumpled.\n\n22 cm tall in the vase.",
-      "priceCents": 2600,
-      "compareAtCents": null,
-      "category": "bouquets",
-      "images": [
-        "/images/products/peony-posy.svg"
-      ],
-      "details": {
-        "Contents": "3 peonies, ribbon tie",
-        "Vase height": "22 cm",
-        "Yarn": "Cotton, 4 ply",
-        "Stems": "Wrapped wire",
-        "Care": "Keep dry"
-      },
-      "stock": 7,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 100,
-      "createdAt": "2026-07-11T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
-      "sale": null
-    },
-    {
-      "id": "11111111-1111-4111-8111-000000000011",
-      "slug": "two-tone-heart-keychain",
-      "name": "Two-tone heart keychain",
-      "tagline": "The easy one. Good first crochet gift.",
-      "description": "Half a heart, two rows, finished. One of the first things I ever made and still the one I sell most of to people learning. Slightly wonky by nature — the two halves are joined with a slip stitch so the seam shows a little.\n\n5 cm. Very cheap, very cheerful.",
-      "priceCents": 800,
-      "compareAtCents": null,
-      "category": "keychains",
-      "images": [
-        "/images/products/two-tone-heart-keychain.svg"
-      ],
-      "details": {
-        "Finished size": "5 cm",
-        "Yarn": "Cotton, 4 ply",
-        "Stitch": "Two rows, slip-stitch join",
-        "Hardware": "Split keyring",
-        "Care": "Spot clean"
-      },
-      "stock": 24,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 110,
-      "createdAt": "2026-04-28T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
+      "createdAt": "2026-08-05T13:12:23.312Z",
+      "updatedAt": "2026-08-05T13:12:23.312Z",
       "sale": null
     },
     {
@@ -359,81 +265,10 @@
       "madeToOrder": true,
       "hidden": false,
       "sortOrder": 120,
-      "createdAt": "2026-09-03T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
+      "createdAt": "2026-09-04T13:12:23.312Z",
+      "updatedAt": "2026-09-04T13:12:23.312Z",
       "sale": null
     }
   ],
-  "banners": [
-    {
-      "id": "00000000-0000-4000-8000-000000000001",
-      "slug": "scarcity-keychains",
-      "name": "Scarcity — keychains",
-      "template": "marquee",
-      "status": "live",
-      "headline": "Last few keychains",
-      "subhead": "When these are gone they take a while to remake. A small handful only, hand-worked to order.",
-      "ctaLabel": "See what is left",
-      "ctaHref": "/category/keychains/",
-      "percentOff": 20,
-      "code": "SCARCITY20",
-      "tint": null,
-      "productIds": [
-        "11111111-1111-4111-8111-000000000006",
-        "11111111-1111-4111-8111-000000000001",
-        "11111111-1111-4111-8111-000000000005",
-        "11111111-1111-4111-8111-000000000009"
-      ],
-      "startsAt": "2026-09-25T09:59:30.369Z",
-      "endsAt": "2026-10-02T18:59:59.999Z",
-      "revision": 1,
-      "rationale": "Auto-generated from the catalogue: these four have the lowest stock in the shop.",
-      "createdAt": "2026-09-25T09:59:30.369Z",
-      "updatedAt": "2026-09-25T09:59:30.369Z",
-      "isLive": true,
-      "salePriceCents": 0,
-      "products": [
-        {
-          "id": "11111111-1111-4111-8111-000000000006",
-          "slug": "bobble-frog-keyring",
-          "name": "Bobble frog keyring",
-          "priceCents": 1200,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/bobble-frog-keyring.svg"
-          ]
-        },
-        {
-          "id": "11111111-1111-4111-8111-000000000001",
-          "slug": "strawberry-coin-purse-keychain",
-          "name": "Strawberry coin purse keychain",
-          "priceCents": 1400,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/strawberry-coin-purse-keychain.svg"
-          ]
-        },
-        {
-          "id": "11111111-1111-4111-8111-000000000005",
-          "slug": "daisy-chain-wall-hanging",
-          "name": "Daisy chain wall hanging",
-          "priceCents": 2900,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/daisy-chain-wall-hanging.svg"
-          ]
-        },
-        {
-          "id": "11111111-1111-4111-8111-000000000009",
-          "slug": "mini-clutch-with-button-flap",
-          "name": "Mini clutch with button flap",
-          "priceCents": 3400,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/mini-clutch-with-button-flap.svg"
-          ]
-        }
-      ]
-    }
-  ]
+  "banners": []
 }

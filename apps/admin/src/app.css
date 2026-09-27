@@ -1,0 +1,13 @@
+/* ─────────────────────────────────────────────────────────────────────
+   The admin panel reuses the storefront's design system verbatim.
+
+   Not a copy — an import. `apps/web/src/styles/global.css` is the single
+   definition of the palette, the type scale and the Skeleton/Tailwind setup,
+   and the promotion editor renders live banner previews, so the panel and the
+   shop have to agree on what a banner looks like. Two copies of this file
+   would drift within a week and the preview would stop predicting anything.
+
+   The import is what `@crochet/web` is a dependency for.
+   ───────────────────────────────────────────────────────────────────── */
+
+@import '@crochet/web/src/styles/global.css';

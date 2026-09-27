@@ -14,15 +14,37 @@
 
 @import 'tailwindcss';
 
-/* Skeleton v5: core Tailwind plugin, Svelte components, then themes.
-   `rose` is imported only as a structural base — every colour in it is
-   overridden by our own theme below, so nothing pink-adjacent leaks. */
-@import '@skeletonlabs/skeleton';
-@import '@skeletonlabs/skeleton-svelte';
-@import '@skeletonlabs/skeleton/themes/rose';
 @import './theme-blush.css';
 
-@source '../../node_modules/@skeletonlabs/skeleton-svelte/dist';
+/* ─────────────────────────────────────────────────────────────────────────
+   Skeleton v5 used to be imported here. It has been removed.
+
+   It was never used. No component in `apps/web` or `apps/admin` imports a
+   Skeleton Svelte component, and no markup uses a Skeleton class or preset
+   (`variant-filled`, `preset-filled`, `card`, `btn`, …). The imports were dead
+   weight that the theme below overrode anyway.
+
+   It was also actively harmful, because Skeleton ships global rules for
+   *generic names* and the admin panel inherits this file wholesale. Two bugs
+   came out of it, and neither was visible until measured in a browser:
+
+     • Skeleton defines a bare `.dialog` (its modal) with
+       `--dialog-translate: -50% -50%` and `translate: var(--dialog-translate)`.
+       The admin's product dialog also used `.dialog`, with
+       `transform: translate(-50%, -50%)`. The `translate` and `transform`
+       properties compose, so both applied and the dialog was displaced by half
+       its own size twice over — landing at y:-307 instead of y:61, which put
+       most of the form off the top of the screen.
+
+     • Skeleton styles bare `code` elements, setting
+       `color: var(--color-surface-950-50)` (near-white) plus a background. The
+       admin's publish hint styled the `background` but not the `color`, so
+       white-on-cream rendered as an empty pink pill.
+
+   The lesson worth keeping: a design-system import is not free even when
+   unused, because its selectors are global and unnamespaced. Everything this
+   project styles now defines its own colours.
+   ───────────────────────────────────────────────────────────────────────── */
 
 /* ─────────────────────────────────────────────────────────────────────
    Brand tokens

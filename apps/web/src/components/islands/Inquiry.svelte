@@ -29,8 +29,7 @@
 <script lang="ts">
   import type { Category, ProductView } from '@crochet/shared';
   import { CATEGORIES } from '@crochet/shared';
-  import { contact, SALES_REGION, whatsappUrl } from '@/lib/contact';
-  import { config, hasApi } from '@/lib/config';
+  import { SALES_REGION, whatsappUrl } from '@/lib/contact';
 
   interface Props {
     /** Prefill with the piece being viewed, so the message is about it. */
@@ -136,28 +135,19 @@
   const href = $derived(whatsappUrl(message));
 
   function openWhatsApp() {
-    // Open first, synchronously. Any `await` before a window.open loses the
-    // user gesture and the browser blocks the popup.
+    // The whole enquiry. There is nothing else to do — the conversation *is*
+    // the record.
+    //
+    // This used to also fire a `POST /api/orders` whose result was explicitly
+    // ignored, "best-effort copy for the admin's enquiry list". That is gone
+    // with the API. A fire-and-forget write that nobody checked, duplicating
+    // a conversation that was already happening on WhatsApp, was a liability
+    // rather than a backup: it could fail silently, and the panel's copy could
+    // disagree with the actual thread.
+    //
+    // Open synchronously. Any `await` before a `window.open` loses the user
+    // gesture and the browser blocks the popup.
     window.open(href, '_blank', 'noopener,noreferrer');
-
-    if (!hasApi) return;
-
-    // Best-effort copy for the admin's enquiry list. Deliberately not
-    // awaited and its result ignored: the conversation is what matters.
-    void fetch(`${config.apiUrl}/api/orders`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        name: name.trim() || 'WhatsApp enquiry',
-        email: '',
-        contact: `whatsapp:${contact.whatsapp}`,
-        category: kind,
-        quantity: 1,
-        brief: message,
-        budgetCents: null,
-        neededBy: null,
-      }),
-    }).catch(() => {});
   }
 </script>
 

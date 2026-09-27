@@ -1,112 +1,86 @@
 /**
- * Reading from the API, with a baked snapshot as the fallback.
+ * Reading the catalogue, from the committed snapshot and nothing else.
  *
- * The storefront is a static build, so at build time the API may be
- * asleep, unreachable, or not deployed yet. Every read therefore follows
- * the same order:
+ * ## What changed, and why it is simpler
  *
- *   1. try the live API (build time: a real fetch, which is how an admin's
- *      latest edits reach the next deploy)
- *   2. fall back to `data/catalog.json`, a snapshot committed to the repo
- *   3. fall back to an empty set, and let the page say so honestly
+ * This module used to have three layers of fallback: try the live API at build
+ * time, fall back to `data/catalog.json`, fall back to an empty shop. It also
+ * exported `revalidate()` for two islands that re-fetched their data in the
+ * browser.
  *
- * At runtime the same helpers are called from the Svelte islands, where
- * there is no build-time fetch and the snapshot arrives as props.
+ * All of that is gone, and the reason is the point of the whole migration:
+ * there is no API any more. The admin panel writes to a local SQLite file and
+ * publishes by committing `data/catalog.json`, so **that file is not a
+ * fallback — it is the only input**. `astro build` reads it, synchronously,
+ * with no network and no credentials, which is why a build can no longer fail
+ * because a database is down or an API is asleep.
+ *
+ * The `source` field on the result is retained, and still earns its place: it
+ * is how `index.astro` reports an empty catalogue honestly rather than
+ * rendering a bare page that looks like a shop with no stock.
+ *
+ * ## What the islands lost
+ *
+ * `BannerRail` and `CatalogGrid` used to call `revalidate()` on mount, so a
+ * promotion saved in the admin panel could appear without a redeploy. Both
+ * already degraded gracefully — they kept their build-time list when the
+ * request failed — so deleting the calls changed nothing about how they render
+ * at build time and only removed a network round trip per page view.
+ *
+ * The honest consequence: **a catalogue change now always requires a publish.**
+ * That is the intended design. It is also the one behavioural change a
+ * shopper could notice, and it is why the admin panel's publish bar is a
+ * permanent status strip rather than a toast.
  */
 
 import {
-  API_ROUTES,
   CATEGORY_META,
-  type ApiResult,
+  type BannerView,
   type Category,
   type ProductView,
 } from '@crochet/shared';
-import { config, hasApi } from './config';
 import SNAPSHOT from '../data/catalog.json';
 
-/* ── Build-time data access ──────────────────────────────────────────── */
-
+/**
+ * The snapshot is generated JSON, so its inferred literal type is far more
+ * specific than the contract (and includes `undefined` for absent keys).
+ * A double assertion is the honest way to say "trust the generator".
+ */
 interface Snapshot {
   generatedAt: string;
   products: ProductView[];
-  banners: import('@crochet/shared').BannerView[];
+  banners: BannerView[];
 }
 
-// The snapshot is generated JSON, so its inferred literal type is far more
-// specific than the contract (and includes `undefined` for absent keys).
-// A double assertion is the honest way to say "trust the generator".
 const snapshot = SNAPSHOT as unknown as Snapshot;
 
-/** Recorded at build time; surfaced in the admin so staleness is visible. */
+/**
+ * When `catalog.json` was last regenerated — i.e. when the catalogue was last
+ * published. Surfaced on the home page so a stale build is visible rather than
+ * silently authoritative.
+ */
 export const snapshotAge = snapshot.generatedAt;
 
 export interface Catalogue {
   products: ProductView[];
-  banners: import('@crochet/shared').BannerView[];
+  banners: BannerView[];
   /** Where the numbers came from. Shown in the admin footer. */
-  source: 'api' | 'snapshot' | 'empty';
+  source: 'snapshot' | 'empty';
 }
 
 /**
- * GET a JSON envelope, with a timeout and optional cancellation.
+ * The full catalogue, read from the committed snapshot.
  *
- * Used in two places: at build time, where the API is often asleep and a
- * null return is the normal path rather than an error; and at runtime from
- * an island, where the caller may supersede the request.
+ * Synchronous, because there is nothing to wait for. Every page that needs
+ * products calls this in its frontmatter, and Astro bakes the result into
+ * static HTML — including `getStaticPaths` in `product/[slug].astro`, which is
+ * why a product page exists if and only if the product was in the last
+ * publish.
  */
-async function fetchJson<T>(
-  path: string,
-  timeoutMs = 4000,
-  external?: AbortSignal,
-): Promise<T | null> {
-  if (!hasApi) return null;
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-  // Chain the caller's signal into ours so either can cancel.
-  const onAbort = () => controller.abort();
-  external?.addEventListener('abort', onAbort, { once: true });
-
-  try {
-    const res = await fetch(`${config.apiUrl}${path}`, {
-      signal: controller.signal,
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) return null;
-    const body = (await res.json()) as ApiResult<T>;
-    return body.ok ? body.data : null;
-  } catch {
-    // Offline, timed out, aborted or malformed — all the same to a caller.
-    return null;
-  } finally {
-    clearTimeout(timer);
-    external?.removeEventListener('abort', onAbort);
-  }
-}
-
-/**
- * Full catalogue. Used by the home page, category pages and the sitemap.
- * Called during `astro build`, so the result is baked into static HTML.
- */
-export async function getCatalogue(): Promise<Catalogue> {
-  const [products, banners] = await Promise.all([
-    fetchJson<ProductView[]>(API_ROUTES.products),
-    fetchJson<import('@crochet/shared').BannerView[]>(API_ROUTES.activeBanners),
-  ]);
-
-  if (products) {
-    return {
-      products,
-      banners: banners ?? [],
-      source: 'api',
-    };
-  }
-
+export function getCatalogue(): Catalogue {
   if (snapshot.products.length > 0) {
     return { products: snapshot.products, banners: snapshot.banners, source: 'snapshot' };
   }
-
   return { products: [], banners: [], source: 'empty' };
 }
 
@@ -131,21 +105,4 @@ export function onSaleProducts(list: ProductView[]): ProductView[] {
   return list
     .filter((p) => p.sale && p.sale.salePriceCents < p.priceCents)
     .sort((a, b) => a.sale!.salePriceCents - b.sale!.salePriceCents);
-}
-
-/* ── Runtime revalidation (islands) ──────────────────────────────────── */
-
-/**
- * Pull a fresh copy of a collection in the browser. Returns null on any
- * failure — including an abort — so a caller can keep showing what it
- * already has rather than blanking the page when the API hiccups.
- *
- * Pass an `AbortSignal` when the caller may issue a newer request before
- * this one settles, or the slower response can win a race.
- */
-export async function revalidate<T>(
-  path: string,
-  init: { timeoutMs?: number; signal?: AbortSignal } = {},
-): Promise<T | null> {
-  return fetchJson<T>(path, init.timeoutMs ?? 6000, init.signal);
 }

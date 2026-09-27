@@ -1,8 +1,26 @@
 User-agent: *
 Allow: /
 
-# The admin panel has its own noindex, but say it here too.
-Disallow: /admin
-Disallow: /api/
+# Nothing is disallowed any more.
+#
+# This used to carry:
+#
+#   Disallow: /admin
+#   Disallow: /api/
+#
+# Both are gone, and neither should be added back without understanding why.
+#
+# `/admin` does not exist in this build. The admin panel is `apps/admin`, runs
+# on 127.0.0.1, and is never built or deployed. There is no URL to disallow,
+# and a `Disallow` for a path that does not exist is just noise that suggests
+# something is being hidden here.
+#
+# `/api/` never existed in the static output either — it was always a separate
+# service on a different origin.
+#
+# If a future version does put an admin route behind a path, the correct tool
+# is a real authentication layer plus `noindex`, not a robots.txt exclusion.
+# `Disallow` prevents crawling, not indexing, and the URL is still disclosed by
+# anyone who guesses it.
 
 Sitemap: https://crochet-and-co.pages.dev/sitemap-index.xml

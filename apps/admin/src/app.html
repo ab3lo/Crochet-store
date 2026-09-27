@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en" data-theme="crochet">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      This page must never be indexed or cached. It is served from loopback,
+      so a crawler cannot reach it at all — but a stale copy in the browser
+      back/forward cache showing yesterday's prices would be genuinely
+      confusing, hence no-store.
+    -->
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <title>Shop admin — Crochet &amp; Co.</title>
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="off">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>

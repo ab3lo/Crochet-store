@@ -480,6 +480,29 @@ export const imageUrlSchema = z
   .url()
   .refine(v => /^https?:\/\//i.test(v), 'Images must be an http(s) URL');
 
+/**
+ * A product photo: either a remote URL or a path on this site.
+ *
+ * Both, and the second kind is now the common one. Product images are files in
+ * `apps/web/public/images/products/`, committed to the repository and served
+ * from the shop's own origin, so the path is `/images/products/<slug>-<hash>.<ext>`.
+ *
+ * This schema used to accept only `imageUrlSchema`, which was correct while
+ * every photo was hotlinked from a CDN and every row was an absolute URL. It
+ * then silently made the whole catalogue unsaveable: the product form posts
+ * the image list back on every save, and every value in it is a site-relative
+ * path, so each edit was rejected with "Please fix the highlighted fields" and
+ * no product could be edited at all.
+ *
+ * One union, at the root, so every caller — the form, the seed, the API — gets
+ * both shapes. `javascript:` and `data:` are still refused, which was the point
+ * of the original check.
+ */
+export const imageSrcSchema = z.union([
+  imageUrlSchema,
+  internalPathSchema.refine(v => v !== '/', 'Point at an image, not the site root'),
+]);
+
 export const imageSourceSchema = z.enum(IMAGE_SOURCES);
 
 /**
@@ -491,7 +514,7 @@ export const imageSourceSchema = z.enum(IMAGE_SOURCES);
  * is rejected at the boundary instead of being discovered later.
  */
 export const productImageInputSchema = z.object({
-  url: imageUrlSchema,
+  url: imageSrcSchema,
   source: imageSourceSchema.default('self-hosted'),
   sourceId: z.string().trim().max(120).nullish(),
   creditName: z.string().trim().max(120).nullish(),
@@ -516,82 +539,158 @@ export type ProductImageInput = z.input<typeof productImageInputSchema>;
  */
 export type ParsedProductImage = z.output<typeof productImageInputSchema>;
 
-export const productInputSchema = z.object({
+/**
+ * The product fields, with **no defaults**.
+ *
+ * Both the create schema and the patch schema are built from this, which is
+ * the only reason the patch schema behaves.
+ *
+ * ## Why `productInputSchema.partial()` is not used for PATCH
+ *
+ * It looks like the obvious thing to write and it is a data-loss bug. In Zod,
+ * `.partial()` marks a key optional but does **not** stop the field's own
+ * `.default()` from firing, so parsing `{ priceCents: 2500 }` against
+ * `productInputSchema.partial()` returns:
+ *
+ *   { tagline: '', description: '', compareAtCents: null, images: [],
+ *     details: {}, madeToOrder: false, hidden: false, sortOrder: 0, … }
+ *
+ * Every absent field arrives populated with its default. A caller that then
+ * writes "only the keys present" back to the row — which is the entire point
+ * of a PATCH — silently empties the description, the tagline and the details
+ * block, and un-hides the product.
+ *
+ * The deleted API had this bug: `apps/api/src/routes/admin.ts` used
+ * `productInputSchema.partial()`. It was invisible because the admin form
+ * always submitted every field, so the defaults it injected happened to be the
+ * values already in the row. The moment anything patches a single field
+ * directly, it eats the rest.
+ *
+ * `z.coerce.boolean()` has the same hazard for a different reason —
+ * `Boolean(undefined)` is `false` — so the coercion must not be reached for a
+ * key that was not sent. Building from default-free fields and applying
+ * `.partial()` to *those* avoids it: an absent key is `undefined`, and the
+ * write path skips `undefined`.
+ */
+const productFields = {
   name: z.string().trim().min(2, 'Give the product a name').max(120),
   slug: z
     .string()
     .trim()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase words joined by dashes'),
-  tagline: z.string().trim().max(200).default(''),
-  description: z.string().trim().max(4000).default(''),
+  tagline: z.string().trim().max(200),
+  description: z.string().trim().max(4000),
   priceCents: z.coerce.number().int().min(0).max(100_000_00),
-  compareAtCents: z.coerce
-    .number()
-    .int()
-    .min(0)
-    .max(100_000_00)
-    .nullable()
-    .default(null),
+  compareAtCents: z.coerce.number().int().min(0).max(100_000_00).nullable(),
   category: categorySchema,
   /**
-   * Accepts a bare URL or a full image object, and always parses to the
+   * Accepts a bare path/URL or a full image object, and always parses to the
    * object form. A bare string means "ours, nothing to attribute", which is
    * what every existing caller — the seed, the demo fixtures, the admin's
-   * simple image field — already sends, so none of them had to change.
+   * image field — already sends.
+   *
+   * There is no `.filter()` here any more. It used to drop anything that was
+   * not `http(s)`, duplicating a check the union already does, and it was the
+   * second of the two places that made local image paths unsaveable. The
+   * element union validates; the transform only normalises shape and fills in
+   * `sortOrder`.
    */
   images: z
-    .array(z.union([imageUrlSchema, productImageInputSchema]))
+    .array(z.union([imageSrcSchema, productImageInputSchema]))
     .max(12)
-    .default([])
-    .transform(list =>
-      list
-        .map((entry, index) =>
-          typeof entry === 'string'
-            ? { url: entry, source: 'self-hosted' as const, sortOrder: index }
-            : { ...entry, sortOrder: entry.sortOrder ?? index },
-        )
-        .filter((image) => /^https?:\/\//i.test(image.url)),
+    .transform((list) =>
+      list.map((entry, index) =>
+        typeof entry === 'string'
+          ? { url: entry, source: 'self-hosted' as const, sortOrder: index }
+          : { ...entry, sortOrder: entry.sortOrder ?? index },
+      ),
     ),
-  details: z.record(z.string().max(64), z.string().max(200)).default({}),
-  stock: z.coerce.number().int().min(0).default(0),
-  madeToOrder: z.coerce.boolean().default(false),
-  hidden: z.coerce.boolean().default(false),
-  sortOrder: z.coerce.number().int().default(0),
+  details: z.record(z.string().max(64), z.string().max(200)),
+  stock: z.coerce.number().int().min(0),
+  madeToOrder: z.coerce.boolean(),
+  hidden: z.coerce.boolean(),
+  sortOrder: z.coerce.number().int(),
+};
+
+/** Full create payload. Every optional field gets its documented default. */
+export const productInputSchema = z.object({
+  ...productFields,
+  tagline: productFields.tagline.default(''),
+  description: productFields.description.default(''),
+  compareAtCents: productFields.compareAtCents.default(null),
+  images: productFields.images.default([]),
+  details: productFields.details.default({}),
+  stock: productFields.stock.default(0),
+  madeToOrder: productFields.madeToOrder.default(false),
+  hidden: productFields.hidden.default(false),
+  sortOrder: productFields.sortOrder.default(0),
 });
 
-export const bannerInputSchema = z.object({
+/**
+ * A partial update. Absent keys stay absent, so a PATCH touches only what it
+ * names. Use this — never `productInputSchema.partial()` — for updates.
+ */
+export const productPatchSchema = z.object(productFields).partial();
+
+/**
+ * The banner fields, with no defaults — for the same reason as
+ * `productFields`. See the note there: `.partial()` on a schema whose fields
+ * carry defaults returns those defaults for absent keys, which turns a
+ * one-field update into a full overwrite.
+ */
+const bannerFields = {
   name: z.string().trim().min(2, 'Name the campaign').max(120),
   slug: z
     .string()
     .trim()
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase words joined by dashes'),
   template: z.enum(BANNER_TEMPLATES),
-  status: z.enum(['draft', 'scheduled', 'live', 'archived']).default('draft'),
+  status: z.enum(['draft', 'scheduled', 'live', 'archived']),
   headline: z.string().trim().min(2, 'The banner needs a headline').max(90),
-  subhead: z.string().trim().max(160).default(''),
-  ctaLabel: z.string().trim().max(40).default('Shop the drop'),
-  ctaHref: internalPathSchema.default('/category/keychains/'),
-  percentOff: z.coerce.number().int().min(0).max(90).default(0),
+  subhead: z.string().trim().max(160),
+  ctaLabel: z.string().trim().max(40),
+  ctaHref: internalPathSchema,
+  percentOff: z.coerce.number().int().min(0).max(90),
   code: z
     .string()
     .trim()
     .toUpperCase()
     .regex(/^[A-Z0-9-]{3,24}$/, 'Codes are 3–24 letters, digits or dashes')
-    .nullable()
-    .default(null),
+    .nullable(),
   tint: z
     .object({
       from: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a 6-digit hex'),
       to: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a 6-digit hex'),
       accent: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a 6-digit hex'),
     })
-    .nullable()
-    .default(null),
-  productIds: z.array(z.uuid()).max(60).default([]),
-  startsAt: z.iso.datetime().nullable().default(null),
-  endsAt: z.iso.datetime().nullable().default(null),
-  rationale: z.string().trim().max(1000).nullable().default(null),
+    .nullable(),
+  productIds: z.array(z.uuid()).max(60),
+  startsAt: z.iso.datetime().nullable(),
+  endsAt: z.iso.datetime().nullable(),
+  rationale: z.string().trim().max(1000).nullable(),
+};
+
+/** Full create payload. */
+export const bannerInputSchema = z.object({
+  ...bannerFields,
+  status: bannerFields.status.default('draft'),
+  subhead: bannerFields.subhead.default(''),
+  ctaLabel: bannerFields.ctaLabel.default('Shop the drop'),
+  ctaHref: bannerFields.ctaHref.default('/category/keychains/'),
+  percentOff: bannerFields.percentOff.default(0),
+  code: bannerFields.code.default(null),
+  tint: bannerFields.tint.default(null),
+  productIds: bannerFields.productIds.default([]),
+  startsAt: bannerFields.startsAt.default(null),
+  endsAt: bannerFields.endsAt.default(null),
+  rationale: bannerFields.rationale.default(null),
 });
+
+/**
+ * A partial banner update. Absent keys stay absent — see `productPatchSchema`
+ * for why this is not `bannerInputSchema.partial()`.
+ */
+export const bannerPatchSchema = z.object(bannerFields).partial();
 
 export type BannerInput = z.infer<typeof bannerInputSchema>;
 

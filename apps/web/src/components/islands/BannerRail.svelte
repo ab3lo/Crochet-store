@@ -18,12 +18,10 @@
 
 <script lang="ts">
   import type { BannerView } from '@crochet/shared';
-  import { API_ROUTES } from '@crochet/shared';
   import { bannerComponent } from '@/components/banners/registry';
-  import { revalidate } from '@/lib/api';
 
   interface Props {
-    /** Server-rendered live banners. */
+    /** Live banners, prerendered into the page at build time. */
     banners: BannerView[];
   }
 
@@ -32,26 +30,19 @@
   const COLLAPSED_KEY = 'crochet.banner.collapsed';
   const HIDDEN_KEY = 'crochet.banner.dismissed';
 
-  // Hydrate from the API so a campaign published since the build shows up
-  // without a redeploy. Keeps the server list if the API is unreachable.
-  // `$state.snapshot` says plainly that this is a copy of the incoming value
-  // and not a live binding to it — `list` is reassigned by the revalidation
-  // below and by dismissal, so it must not alias the prop.
+  // A copy of the incoming list, not a binding to it: `list` is reassigned
+  // below when a banner is dismissed, and aliasing the prop would make
+  // dismissing one island's banner affect the page.
+  //
+  // This used to be seeded from the API in the browser, so a campaign saved
+  // after the build could appear without a redeploy. There is no API now —
+  // `banners` is baked in at build time from `catalog.json`, and a promotion
+  // reaches the shop when the admin panel publishes it.
   let list = $state<BannerView[]>($state.snapshot(banners));
   let index = $state(0);
   let paused = $state(false);
   let expanded = $state(true);
   let ready = $state(false);
-
-  $effect(() => {
-    let cancelled = false;
-    revalidate<BannerView[]>(API_ROUTES.activeBanners).then((fresh) => {
-      if (!cancelled && fresh && fresh.length > 0) list = fresh;
-    });
-    return () => {
-      cancelled = true;
-    };
-  });
 
   /* Read the stored preference once the island is on the client. Doing this
      in an effect rather than at module scope keeps the first server-rendered

@@ -4,6 +4,19 @@ dist/
 .output/
 .wrangler/
 
+# SvelteKit's generated tree for the admin panel (apps/admin/.svelte-kit).
+#
+# Deleting it to "clear a cache" breaks the dev server outright: SvelteKit
+# generates its server entrypoints there at `svelte-kit sync` time, and Vite
+# resolves `/.svelte-kit/generated/server/internal.js` on the very first
+# request. The error it produces —
+#
+#   Failed to load url /.svelte-kit/generated/server/internal.js
+#
+# — reads like a missing dependency and is not one. `bun run dev` runs the sync
+# itself; only reach for `bunx svelte-kit sync` if it is missing at startup.
+.svelte-kit/
+
 # env
 #
 # The old rules only covered `.env`, `.env.local` and `.env.*.local`, which

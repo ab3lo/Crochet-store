@@ -5,29 +5,25 @@
   "type": "module",
   "workspaces": [
     "shared",
-    "apps/*"
+    "apps/admin",
+    "apps/web"
   ],
   "scripts": {
+    "admin": "bun run --cwd apps/admin dev",
     "dev": "bun run --cwd apps/web dev",
-    "dev:api": "bun run --cwd apps/api dev",
     "build": "bun run --cwd apps/web build",
     "preview": "bun run --cwd apps/web preview",
-    "dev:offline": "bun run --cwd apps/web dev:demo",
-    "build:offline": "bun run --cwd apps/web build:offline",
+    "seed": "bun run --cwd apps/admin seed",
+    "export": "bun run --cwd apps/admin export",
+    "publish": "bun run --cwd apps/admin publish",
     "theme": "bun run --cwd apps/web theme",
-    "snapshot": "bun run --cwd apps/web snapshot",
     "placeholders": "bun run --cwd apps/web placeholders",
-    "seed": "bun run --cwd apps/api seed",
-    "create-admin": "bun run --cwd apps/api create-admin",
-    "db:migrate": "bun run --cwd apps/api db:migrate",
-    "typecheck": "bun run --cwd apps/api typecheck",
-    "scan:dead": "bun scripts/scan-dead.ts"
+    "typecheck": "bun run --cwd apps/admin typecheck"
   },
   "engines": {
     "bun": ">=1.2.0"
   },
   "dependencies": {
-    "@better-auth/infra": "^0.4.11",
     "vite": "^8.3.1"
   }
 }

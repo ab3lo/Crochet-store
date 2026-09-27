@@ -52,12 +52,35 @@ export default defineConfig({
   security: {
     csp: {
       algorithm: 'SHA-256',
+      /**
+       * Tightened when the API was deleted.
+       *
+       * `connect-src` was `'self' https:` and `img-src` was `'self' data: https:`
+       * — both wildcards that existed for one reason: the browser had to reach
+       * the Bun API on another origin, and product photos were hotlinked from
+       * the Supabase CDN. Neither is true any more.
+       *
+       *   • The storefront fetches nothing cross-origin. The catalogue is baked
+       *     in at build time and the two revalidation effects are gone, so the
+       *     only runtime requests are Astro's own module loads — all same-origin.
+       *   • Product photos are files in `public/images/products/`, committed to
+       *     the repository and copied verbatim into the build. They are served
+       *     from the shop's own origin.
+       *
+       * So `connect-src 'self'` and `img-src 'self' data:` are both exact now,
+       * and the difference is not cosmetic: the old policy permitted a
+       * compromised or injected script to exfiltrate the catalogue, the cart
+       * and anything the visitor typed to any host on the internet, and to
+       * render an image from any host. Neither is possible now.
+       *
+       * `data:` is still needed for images — it is how the inline SVG data URIs
+       * in product copy and the theme swatches work.
+       */
       directives: [
         "default-src 'self'",
-        // Product photos come from the Supabase CDN.
-        "img-src 'self' data: https:",
+        "img-src 'self' data:",
         "font-src 'self'",
-        "connect-src 'self' https:",
+        "connect-src 'self'",
         "form-action 'self'",
         "base-uri 'self'",
         "object-src 'none'",
@@ -83,11 +106,25 @@ export default defineConfig({
 
   integrations: [
     svelte(),
-    // The admin shell is a real page, so the sitemap integration would list it
-    // by default — while robots.txt disallows it. A disallowed URL in a
-    // sitemap is a contradiction, and it invites indexing of the one page that
-    // has no business being in a result.
-    sitemap({ filter: (page) => !page.includes('/admin') }),
+    // The admin panel is no longer part of this build. It lives in
+    // `apps/admin`, runs on localhost, and is never built, bundled or served
+    // by Pages — so there is nothing to filter out of the sitemap and no
+    // `dist/admin` to leak.
+    //
+    // The `filter` below is kept anyway, as a cheap assertion of that: if an
+    // `/admin` page ever reappears in `apps/web/src/pages`, it fails the build
+    // rather than shipping a copy of the panel to the internet.
+    sitemap({
+      filter: (page) => {
+        if (page.includes('/admin')) {
+          throw new Error(
+            'An /admin page exists in apps/web. The admin panel must live in apps/admin ' +
+              'and must never be part of the static build.',
+          );
+        }
+        return true;
+      },
+    }),
   ],
 
   vite: {
@@ -106,11 +143,13 @@ export default defineConfig({
   },
 
   image: {
-    // Product photos come from the Supabase CDN; the placeholders are local
-    // SVG. Nothing is optimised at build time because the catalogue is
-    // populated at runtime, after the build, so this only matters if
-    // `astro:assets` is ever switched on — at which point the remote host has
-    // to be named here or the build fails.
-    domains: ['*.supabase.co'],
+    // Every image the site serves is a file in `public/`, so there is no
+    // remote host to allow. The Supabase entry here is a leftover from when
+    // product photos were hotlinked from a CDN; with images committed to the
+    // repository, `astro:assets` would only ever process local files.
+    //
+    // Left as an empty object rather than deleted so switching
+    // `astro:assets` on is a config change rather than an archaeology exercise.
+    domains: [],
   },
 });

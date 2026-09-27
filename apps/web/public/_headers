@@ -8,11 +8,11 @@
   # rest of it must not be.
   #
   # It used to be hand-written here as `script-src 'self'`. That silently broke
-  # the whole site: Astro emits its hydration bootstrap as inline scripts, so
-  # the policy blocked the `<astro-island>` custom element from ever being
-  # defined. The pages still looked correct — the HTML is prerendered — but no
-  # island hydrated, so the cart, the catalogue filters and the admin panel
-  # were all inert.
+  # the whole site: Astro emits its hydration bootstrap as inline scripts, so the
+  # policy blocked the `<astro-island>` custom element from ever being defined.
+  # The pages still looked correct — the HTML is prerendered — but no island
+  # hydrated, so the cart, the catalogue filters and the floating nav were all
+  # inert.
   #
   # The rest of the policy now comes from `security.csp` in astro.config.mjs,
   # which hashes the inline scripts and styles Astro emits. A header CSP and a
@@ -42,10 +42,14 @@
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# Product photos.
+#
+# These are files in the repository, copied verbatim into the build, and their
+# filenames contain a content hash — the admin panel writes
+# `<slug>-<hash>.webp`, so a changed photo is always a changed URL. That is
+# what makes a long immutable cache safe here.
+#
+# The 7-day revalidation window is for the SVG placeholders, which do NOT have
+# a content hash and are overwritten in place by `bun run placeholders`.
 /images/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
-
-# Never let a CDN cache the admin shell.
-/admin/*
-  Cache-Control: no-store
-  X-Robots-Tag: noindex, nofollow
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000

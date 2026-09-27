@@ -1,21 +1,19 @@
 /**
  * Public, build-time configuration.
  *
- * Only `PUBLIC_*` values may be read here — everything in this file is
- * inlined into the client bundle.
+ * Only `PUBLIC_*` values may be read here — everything in this file is inlined
+ * into the client bundle.
+ *
+ * This used to carry `apiUrl`, `authUrl` and a `hasApi` flag, and the whole
+ * storefront branched on them. All three are gone: there is no API, and a
+ * storefront that cannot reach one is a storefront that always renders.
  */
 
 const raw = import.meta.env;
 
 export const config = {
   siteUrl: (raw.PUBLIC_SITE_URL ?? 'https://crochet-and-co.pages.dev').replace(/\/$/, ''),
-  /** Empty string means "no API" — the site then runs purely off the
-   *  build-time snapshot and the admin panel reports itself offline. */
-  apiUrl: (raw.PUBLIC_API_URL ?? '').replace(/\/$/, ''),
-  authUrl: (raw.PUBLIC_AUTH_URL ?? '').replace(/\/$/, ''),
 } as const;
-
-export const hasApi = config.apiUrl.length > 0;
 
 /** Absolute URL for canonical tags, sitemap entries and social cards. */
 export const absolute = (path: string): string =>

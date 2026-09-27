@@ -5,14 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "dev:offline": "env -u PUBLIC_API_URL -u PUBLIC_AUTH_URL PUBLIC_API_URL= PUBLIC_AUTH_URL= astro dev",
     "build": "astro build",
-    "build:offline": "env PUBLIC_API_URL= PUBLIC_AUTH_URL= astro build",
     "preview": "astro preview",
     "theme": "bun scripts/build-theme.ts",
-    "snapshot": "bun scripts/snapshot.ts",
-    "placeholders": "bun scripts/placeholders.ts",
-    "dev:demo": "env -u PUBLIC_API_URL -u PUBLIC_AUTH_URL PUBLIC_API_URL= PUBLIC_AUTH_URL= astro dev"
+    "placeholders": "bun scripts/placeholders.ts"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -20,11 +16,8 @@
     "@crochet/shared": "workspace:*",
     "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource-variable/instrument-sans": "^5.3.0",
-    "@skeletonlabs/skeleton": "^5.0.1",
-    "@skeletonlabs/skeleton-svelte": "^5.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.5",
-    "better-auth": "~1.4.22",
     "svelte": "^5.57.1",
     "tailwindcss": "^4.3.3"
   },

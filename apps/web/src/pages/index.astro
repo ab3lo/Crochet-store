@@ -124,17 +124,28 @@ const stocked = CATEGORY_META.filter((c) =>
     </div>
   </section>
 
-  {
-    source !== 'api' && (
-      <p class="shell shell--content source-note">
-        {source === 'empty'
-          ? 'The catalogue is empty — run the seed script to populate it.'
-          : `Showing the catalogue snapshot from ${new Date(
-              snapshotAge,
-            ).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })} — the API was not reachable when this page was built. Publish something in the admin to refresh it.`}
-      </p>
-    )
-  }
+  <!--
+    The publish date, always.
+
+    This used to be conditional on `source !== 'api'` — it appeared only when
+    the build had fallen back to the snapshot because the API was unreachable.
+    There is no API now, so that condition was always true and said nothing.
+
+    The date is worth showing unconditionally: it answers "how current is this
+    page?", which is a real question on a static site where a price can be
+    weeks behind what the maker charged yesterday.
+  -->
+  <p class="shell shell--content source-note">
+    {
+      source === 'empty'
+        ? 'The catalogue is empty — run the seed script to populate it.'
+        : `Catalogue as published on ${new Date(snapshotAge).toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })} — edited in the admin panel and published with a commit.`
+    }
+  </p>
 </Storefront>
 
 <style>

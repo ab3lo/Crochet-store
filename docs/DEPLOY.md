@@ -1,369 +1,149 @@
-# Connecting Supabase & deploying
+# Publishing the shop
 
-Written for someone setting this up for the first time. Follow it in order —
-step 3 needs step 1's connection string, and step 7 needs step 6.
+How a change to the catalogue becomes a change to the live site.
 
----
-
-## Contents
-
-1. [What you are deploying](#1-what-you-are-deploying)
-2. [Create the Supabase project](#2-create-the-supabase-project)
-3. [Set up the database](#3-set-up-the-database)
-4. [Set up storage for product photos](#4-set-up-storage-for-product-photos)
-5. [Run the API locally](#5-run-the-api-locally)
-6. [Deploy the API](#6-deploy-the-api)
-7. [Deploy the storefront](#7-deploy-the-storefront)
-8. [Verify](#8-verify)
-9. [Everyday use](#9-everyday-use)
-10. [Troubleshooting](#10-troubleshooting)
-
----
-
-## 1. What you are deploying
-
-Two separate things. They do not deploy together and they do not talk at
-build time.
-
-| | What | Where | Needs secrets? |
-| --- | --- | --- | --- |
-| **Storefront** | `apps/web` — 22 static HTML pages | Cloudflare Pages | No. Only two public URLs. |
-| **API** | `apps/api` — a Bun + Hono process | Fly.io, Railway, Render, a VPS | Yes. Five secrets. |
-
-The storefront is fully static. It renders from a committed snapshot
-(`apps/web/src/data/catalog.json`), so a build never fails because the
-database is down. The API is only needed at *runtime*, for the admin panel
-and for the catalogue to update between deploys.
+There is no API, no database server, no image host and no deploy hook. The
+whole pipeline is:
 
 ```
-  Browser ──────► Cloudflare Pages                  (static HTML, no secrets)
-     │                            │
-     │  /admin  ────────────────► │  calls the API with the session cookie
-     ▼                            ▼
-  shopper                    Bun + Hono API  ────►  Supabase Postgres
-                                 │                └──►  Supabase Storage
-                                 └── Better Auth (sessions, admin role)
+  SQLite                catalog.json              git push              Pages
+  ───────               ────────────              ─────────              ─────
+  data/catalog.sqlite →  src/data/catalog.json →   origin/main       →   rebuilds
+  (your machine)         (committed)               (this is the          (static
+                                                       trigger)            HTML)
 ```
 
----
-
-## 2. Create the Supabase project
-
-1. Go to <https://supabase.com/dashboard> → **New project**.
-2. Name it anything (`crochet-shop`). Pick the region **closest to Bahawalpur**
-   — Mumbai (ap-south-1) is the nearest one. Database latency is the one thing
-   you can still change cheaply later.
-3. **Save your database password.** This is the one password you cannot
-   recover from the dashboard.
-4. Wait ~2 minutes for provisioning.
-
-You need two things from **Settings → API**:
-
-| Field | Where | Goes to |
-| --- | --- | --- |
-| Project URL | Project Settings → API | `SUPABASE_URL` |
-| Service Role Key | Project Settings → API → *service_role* | `SUPABASE_SERVICE_ROLE_KEY` |
-
-> The **service role key bypasses Row Level Security.** It is a master
-> password for your database. It goes in the API's environment and nowhere
-> else — never in `apps/web`, never in git, never in a Cloudflare Pages
-> environment variable. If you ever paste one into a chat, rotate it in the
-> dashboard immediately.
+Three things worth understanding before you change anything.
 
 ---
 
-## 3. Set up the database
+## 1. Saving is not publishing
 
-### 3a. Create the file
+**Editing in the panel changes your computer. It changes nothing else.**
+
+This is the single most important thing to know, and it is a deliberate change
+from how this worked before. Previously a save in the admin panel wrote to a
+hosted database and immediately fired a Cloudflare deploy hook, so the change
+reached the site on its own. There is no hook now, so a save is a local write
+and nothing more.
+
+The panel makes this unmissable: the status strip at the top compares
+
+```
+  last edited    12:04
+  last published 11:30
+```
+
+and says **"The shop is behind this catalogue"** when the first is later than
+the second. It is a permanent strip, not a toast, because the question "is it
+live yet?" is the one you will ask every single time.
+
+### Why not keep auto-publishing?
+
+Because a publish is a `git commit` and a `git push`, and those should be
+deliberate. Auto-publishing on every keystroke would mean a commit per
+keystroke, and a git history that cannot be read. Making it a button means:
+
+- every commit is a change a person decided to make;
+- you can make five edits and publish them as one commit;
+- `git revert` cleanly undoes a bad publish;
+- you can review what will go live before it goes live.
+
+The cost is that publishing is a separate step. The panel's button is
+top-right, and it takes about two seconds.
+
+---
+
+## 2. How to publish
+
+Press **Publish to the shop**, or from a terminal:
 
 ```bash
-cp .env.example .env
+bun run publish
 ```
 
-Now fill in `.env`:
+That does four things, in order:
 
-```bash
-NODE_ENV=production
-PORT=8787
+1. regenerates `apps/web/src/data/catalog.json` from SQLite
+2. `git add`s **only** the catalogue and your product images
+3. commits
+4. pushes to `main`
 
-# openssl rand -base64 32
-BETTER_AUTH_SECRET=paste_a_32_plus_character_random_string_here
-BETTER_AUTH_URL=https://your-api.fly.dev
-BETTER_AUTH_TRUSTED_ORIGINS=https://your-shop.pages.dev
+The commit message is one line describing the catalogue — `Catalogue: 12 products,
+1 live promotion(s)` — so `git log --oneline` reads as a history of the shop
+rather than of publishing events. Override it with `bun run publish -m "..."`.
 
-# Settings → Database → Connection string → URI
-# Use the DIRECT one, or the SESSION pooler on port 5432.
-# Do NOT use port 6543: that is transaction mode only, and its role
-# (`postgres.<ref>`) neither owns the tables nor bypasses RLS — so every
-# query would return zero rows with no error, which looks like an empty shop.
-DATABASE_URL=postgresql://postgres.yourref:PASSWORD@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
+The push is the rebuild trigger. Cloudflare Pages sees the commit and rebuilds;
+the site is live a minute or two later.
 
-# Product images are in Supabase Storage.
-# Cloudflare R2 would be the better host — its egress is free and unmetered,
-# where this free plan allows 5 GB/month across all services and then bills
-# $0.09/GB uncached (~1,400 homepage views a month at 12 product images).
-# R2 needs a payment method on the Cloudflare account, so it is not worth the
-# trade at this size. If image traffic grows, move the bucket: nothing in
-# product_images knows which host serves the bytes.
-SUPABASE_URL=https://yourref.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_STORAGE_BUCKET=product-images
-SEED_ADMIN_EMAIL=you@example.com
+### It will not touch your other work
+
+A publish commits **the catalogue and your images. Nothing else.** Ever.
+
+Uncommitted changes elsewhere in the repo — a refactor in progress, a README
+edit, a scratch file — are none of the panel's business. They stay in your
+working tree, untouched, and you commit them yourself when you mean to. The
+panel does not list them, does not warn about them, and does not care.
+
+That guarantee comes from two things:
+
+1. `git add` is given an explicit file list, never `-A`. `-A` would sweep the
+   working tree into the commit.
+2. The git **index** is checked before committing. A plain `git commit` commits
+   the index and nothing else, so unstaged work cannot reach it.
+
+There is exactly one case that stops a publish, and it is the one that would
+actually corrupt a commit: a file from outside the catalogue that is **already
+staged**, which `git commit` would then sweep in.
+
+```
+  Not published — these are staged, and a commit takes the whole index, so they
+  would go out with the catalogue. Unstage them first:
+    • some-other-file.ts
+
+  git restore --staged <file>
 ```
 
-**Use the pooler connection string.** A long-lived server on a direct
-connection exhausts Supabase's connection slots quickly, and you will get
-`too many connections` errors that look nothing like the cause.
-
-**`BETTER_AUTH_TRUSTED_ORIGINS` is a comma-separated list.** Your storefront
-origin must be in it or the admin panel gets blocked by CORS. Localhost too,
-while you are developing.
-
-### 3b. Run the migrations
+To publish anyway — having read that list and decided those files *should* go
+out with the catalogue:
 
 ```bash
+bun run publish --force
+```
+
+### Other flags
+
+```bash
+bun run publish --no-push        # commit but don't push — review it first
+bun run publish -m "New: the green bag"
+bun run publish --force
+```
+
+`--no-push` is the one to reach for when you are unsure. It leaves you with a
+commit you can inspect with `git show` before pushing it yourself.
+
+---
+
+## 3. Setting it up
+
+### First run
+
+```bash
+git clone <your-repo>
 bun install
-bun run db:migrate
+bun run seed          # twelve demo pieces, so the shop is not empty
+bun run admin         # http://127.0.0.1:4322
 ```
 
-This creates every table. Expected output:
-
-```
-  ✓ 0001_storefront.sql
-  ✓ 0002_better_auth.sql
-Applied 2 migration(s).
-```
-
-> **`0002_better_auth.sql` is hand-written, and the quotes matter.** Better
-> Auth's Kysely adapter uses camelCase field names verbatim, so the column is
-> `"emailVerified"`. Postgres folds *unquoted* identifiers to lower case,
-> which would create `"emailverified"` and then break every sign-in with
-> `column "emailVerified" of relation "user" does not exist`. If you ever
-> extend that file, quote every identifier.
->
-> The Better Auth CLI is not used, on purpose: it depends on `better-sqlite3`,
-> which needs a native build (`node-gyp`) even though this project only ever
-> talks to Postgres. That fails on a Bun-only machine.
-
-### 3c. Optional: seed the demo catalogue
-
-```bash
-bun run seed
-```
-
-Twelve products and one promotion, so the shop is not empty on first load.
-Skip it if you would rather enter your own pieces through the admin panel.
-
----
-
-## 4. Set up storage for product photos
-
-1. **Storage** → **New bucket**
-2. Name: `product-images` (must match `SUPABASE_STORAGE_BUCKET`)
-3. **Public bucket**: on
-4. **File size limit**: 10 MB (the API rejects anything over 8 MB)
-5. Save.
-
-The bucket is public because the storefront has to hotlink images from it. It
-contains nothing but product photos. Uploads still go through the API's
-authenticated endpoint, so only you can add to it.
-
-No RLS policies are needed: the API uses the service-role key, and reads are
-anonymous. Do **not** add a public write policy — that would let anyone
-upload to your bucket.
-
----
-
-## 5. Run the API locally
-
-```bash
-bun run dev:api        # http://localhost:8787
-```
-
-Check it: <http://localhost:8787/api/health> should return
-`{"ok":true,"data":{"status":"up",…}}`.
-
-Then the storefront:
-
-```bash
-echo 'PUBLIC_API_URL=http://localhost:8787' >> apps/web/.env
-echo 'PUBLIC_SITE_URL=http://localhost:4321'  >> apps/web/.env
-bun run dev            # http://localhost:4321
-```
-
-Create your owner account and sign in at <http://localhost:4321/admin>:
-
-```bash
-SEED_ADMIN_EMAIL=you@example.com \
-SEED_ADMIN_PASSWORD='a long passphrase of at least 12 characters' \
-bun run create-admin
-```
-
-> After this, **sign out and back in.** Better Auth caches the session in a
-> signed cookie for five minutes, so a role change is invisible to the session
-> you already have. Run `create-admin` again at any time to restore access —
-> it is idempotent.
-
----
-
-## 6. Deploy the API
-
-The API is one Bun process with no platform-specific bindings, so any Bun host
-works. Two routes, in the order most people should try them.
-
-### Cloudflare Tunnel — free, no payment method
-
-The API does not need to be reachable from the internet on its own, and it does
-not need to be up all day. Nothing public depends on it: the storefront is
-static, and the enquiry form opens WhatsApp and only *then* records a copy in
-the database, fire-and-forget. So the API is a tool you switch on when you are
-editing the shop.
-
-A tunnel gives it a public HTTPS name without a public IP, a forwarded port or
-a hosting bill.
-
-```bash
-# 1. Install
-#    macOS:   brew install cloudflared
-#    Linux:   see https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
-#    Windows: winget install Cloudflare.cloudflared
-
-# 2. One-time: authorise this machine with your Cloudflare account
-cloudflared tunnel login
-
-# 3. Create the tunnel and name its public hostname
-cloudflared tunnel create crochet-api
-cloudflared tunnel route dns crochet-api api.your-shop.com
-```
-
-That writes `~/.cloudflared/config.yml`. Point it at the API:
-
-```yaml
-tunnel: <tunnel-id>
-credentials-file: /home/you/.cloudflared/<tunnel-id>.json
-
-ingress:
-  - hostname: api.your-shop.com
-    service: http://localhost:8787
-  - service: http_status:404
-```
-
-Run both, in two terminals:
-
-```bash
-bun run --cwd apps/api dev     # the API
-cloudflared tunnel run crochet-api
-```
-
-**Use a named tunnel, not `cloudflared tunnel --url`.** The `--url` form
-prints a random `*.trycloudflare.com` address that changes every restart, which
-means rebuilding the storefront every time you reboot. A named tunnel keeps
-its hostname, and the storefront's `PUBLIC_API_URL` stays valid.
-
-Two settings matter here:
-
-- `TRUSTED_PROXY=true` is now correct. Requests arrive through Cloudflare's
-  edge, which sets `cf-connect-ip` and overwrites `x-forwarded-for` — so those
-  headers are no longer client-spoofable and the rate limiter can trust them.
-- The tunnel hostname is a public origin, so `BETTER_AUTH_TRUSTED_ORIGINS` and
-  the CORS allowlist must list the real storefront origin, not `*`.
-
-If you would rather not keep a terminal open, install it as a system service
-(`cloudflared service install`) so it starts with the machine.
-
-### Moving to another machine
-
-Nothing about the API is bound to a machine. There is no local database, no
-state on disk, and no hostname or absolute path anywhere in the code. Moving is:
-
-```bash
-git clone <your-repo>          # the code is public
-cp old-machine/apps/api/.env  # the only machine-specific artefact
-cd apps/api && bun install
-cloudflared tunnel run crochet-api
-```
-
-That is the whole procedure, and it works because the tunnel is defined in your
-Cloudflare account rather than on the box — the machine only holds a token and
-a config file, both of which travel in `.env` and `~/.cloudflared`.
-
-The API prints a readiness report at boot listing what is configured and what
-is not, by variable name and never by value. If something is wrong on a fresh
-machine, that report is the first thing to read:
-
-```
-  Crochet & Co. API — ready
-  ✓ publish      deploy hook set — edits go live automatically
-  ! proxy        TRUSTED_PROXY is off, so every visitor shares one rate-limit
-                 bucket. Fine behind a tunnel, wrong behind a raw port.
-```
-
-### Fly.io
-
-```bash
-bunx fly@latest auth login
-bunx fly@latest launch --no-deploy --name crochet-api --region bom
-bunx fly@flyctl.dev secrets set \
-  NODE_ENV=production \
-  BETTER_AUTH_SECRET="..." \
-  BETTER_AUTH_URL="https://crochet-api.fly.dev" \
-  BETTER_AUTH_TRUSTED_ORIGINS="https://your-shop.pages.dev,http://localhost:4321" \
-  DATABASE_URL="postgresql://...?sslmode=require" \
-  SUPABASE_URL="https://yourref.supabase.co" \
-  SUPABASE_SERVICE_ROLE_KEY="..." \
-  TRUSTED_PROXY=false
-bunx fly@latest deploy
-bunx fly@flyctl.org scale count 1      # do not scale to 2
-```
-
-Two things to know:
-
-- **Keep it at one instance.** The rate limiter is in memory, so a second
-  instance doubles every allowance. At this shop's traffic one is plenty.
-- **`TRUSTED_PROXY`** stays `false` on Fly, because Fly terminates TLS itself
-  and the origin is public. Set it to `true` only if you put the API behind
-  Cloudflare, which overwrites `cf-connect-ip`.
-
-Your API is now at `https://crochet-api.fly.dev`.
-
-### Railway / Render
-
-Equivalent: build command `bun install`, start command `bun run --cwd apps/api
-start`, root directory `apps/api`, and add the same seven environment
-variables. Railway needs a `bunfig.toml`-free setup; nothing special.
-
-### A VPS
-
-```bash
-# Docker
-docker run -d --name crochet-api --restart unless-stopped -p 8787:8787 \
-  --env-file .env oven/bun:1 docker-entrypoint bun run --cwd apps/api start
-```
-
-Put nginx or Caddy in front for TLS. Set `BETTER_AUTH_URL` to the https URL.
-
-### The API's Docker image (optional)
-
-```dockerfile
-FROM oven/bun:1
-WORKDIR /app
-COPY . .
-RUN bun install --frozen-lockfile --production
-ENV NODE_ENV=production PORT=8787
-EXPOSE 8787
-CMD ["bun", "run", "--cwd", "apps/api", "start"]
-```
-
----
-
-## 7. Deploy the storefront
-
-The storefront is static, so it goes to any static host.
+`data/catalog.sqlite` is created on first run and is gitignored. It is a
+working file, not source.
 
 ### Cloudflare Pages
 
-The storefront deploys here. Connect the repo under **Workers & Pages →
-`<project>` → Settings → Builds → Connect to Git**, production branch `main`.
+The storefront is static, so it goes to any static host.
+
+Connect the repo under **Workers & Pages → your project → Settings → Builds →
+Connect to Git**, production branch `main`.
 
 | Setting | Value |
 | --- | --- |
@@ -378,119 +158,95 @@ Build variables and environment variables → **both** Production and Preview:
 | --- | --- | --- |
 | `BUN_VERSION` | build | `1.4.0` |
 | `PUBLIC_SITE_URL` | env | your shop's public origin |
-| `PUBLIC_API_URL` | env | your deployed API, or leave unset for snapshot-only |
 
-`BUN_VERSION` is not optional. Cloudflare's build image ships Bun 1.2, and
-`bun.lock` is `lockfileVersion: 2`, which 1.2 cannot parse. Without it the
-build fails at `bun install --frozen-lockfile` with `Unknown lockfile
-version`. Pin it to the Bun that generated the lockfile rather than `latest`,
-so the build stays reproducible.
+`BUN_VERSION` is not optional. Cloudflare's build image ships an older Bun that
+cannot parse this repo's `bun.lock` (`lockfileVersion: 2`), and the build fails
+at `bun install --frozen-lockfile` with `Unknown lockfile version`. Pin it to
+the Bun that generated the lockfile rather than `latest`, so the build stays
+reproducible.
+
+There is no `PUBLIC_API_URL` any more, and no database URL. If you see either
+in a Cloudflare settings page, they are leftovers from the old setup and can be
+deleted.
 
 `apps/web/public/_headers` is picked up automatically. It sets HSTS,
-`X-Frame-Options: DENY` and immutable caching for hashed assets.
+`X-Frame-Options: DENY` and caching rules.
 
 **The Content Security Policy is not in `_headers`.** It comes from
-`security.csp` in `astro.config.mjs`, which hashes the inline scripts and
-styles Astro emits. A hand-written `script-src 'self'` in `_headers` blocks
-Astro's hydration bootstrap, so `<astro-island>` is never defined and no Svelte
-island on the site hydrates — the pages still render, because the HTML is
-prerendered, so it looks like a successful deploy. Only `frame-ancestors`
-stays in the header, because a policy in a `<meta>` tag cannot enforce it.
+`security.csp` in `astro.config.mjs`, which hashes the inline scripts and styles
+Astro emits. A hand-written `script-src 'self'` in `_headers` blocks Astro's
+hydration bootstrap, so `<astro-island>` is never defined and no Svelte island
+on the site hydrates — the pages still render, because the HTML is prerendered,
+so it looks like a successful deploy. Only `frame-ancestors` stays in the
+header, because a policy in a `<meta>` tag cannot enforce it.
 
 ### GitHub Pages
 
-Not used. A workflow for it existed and was removed: the storefront is on
-Cloudflare Pages, and leaving a second deploy path wired up only meant a
-failing run on every push to `main`.
+Not used. The storefront is on Cloudflare Pages, and leaving a second deploy
+path wired up only meant a failing run on every push. GitHub Pages also cannot
+set response headers, so `_headers` would be ignored and there would be no CSP
+at all.
 
-GitHub Pages cannot set response headers, so `_headers` is ignored there —
-which would mean no CSP at all. For the same reason it is not a fallback
-worth keeping. `/admin` is a static page like any other; it holds no secrets
-(the guard is `role === 'admin'` in the API), and `robots.txt` plus a
-`noindex` meta tag keep it out of search results.
-
-### Adding a custom domain
-
-Cloudflare Pages: **Custom domains** → add the domain → add the CNAME it gives
-you at your DNS provider. TLS is automatic.
-
-Then update two things, or you will ship a site with the wrong canonical URLs:
-
-- `PUBLIC_SITE_URL` on the storefront
-- `BETTER_AUTH_TRUSTED_ORIGINS` on the API
+If you did move there, the build would need a base-path change in
+`astro.config.mjs` and a rewrite for the trailing-slash URLs, since GitHub
+Pages serves `/product/x/index.html` at `/product/x/` only with `cleanUrls`.
 
 ---
 
-## 8. Verify
+## 4. Protecting the panel
 
-Work down this list. Each one catches a specific misconfiguration.
+**Do not put the panel on the internet.** Not behind a tunnel, not on a public
+host, not on a VPS.
 
-```bash
-# 1. The API is up and the database is reachable
-curl https://crochet-api.fly.dev/api/health
-#    → {"ok":true,...}
+There is no password. There is no session. There is no login page. The entire
+access control is that `apps/admin/vite.config.ts` binds to `127.0.0.1`, so
+there is no network path to reach it. That is stronger than a login — there is
+nothing to phish, steal or brute-force — but it depends entirely on that bind
+address.
 
-# 2. CORS is scoped to your storefront, not the world
-curl -si -X OPTIONS https://crochet-api.fly.dev/api/products \
-  -H "Origin: https://your-shop.pages.dev" \
-  -H "Access-Control-Request-Method: GET" | grep -i access-control-allow-origin
-#    → Access-Control-Allow-Origin: https://your-shop.pages.dev
+If you need to reach it from another machine, the answer is a real
+authentication layer in front of it, not a tunnel to an unauthenticated panel.
+The panel can `git push` to production. Treat it like the SSH key it now
+effectively is.
 
-curl -si -X OPTIONS https://crochet-api.fly.dev/api/products \
-  -H "Origin: https://evil.example" \
-  -H "Access-Control-Request-Method: GET" | grep -ci access-control-allow-origin
-#    → 0   (no header, which is the point)
+The panel shows a red banner if it detects it is being served on anything other
+than localhost. That is a warning, not a control — by the time it appears, the
+process is already reachable.
 
-# 3. The admin API refuses anonymous callers
-curl -s https://crochet-api.fly.dev/api/admin/products
-#    → {"ok":false,"error":"Sign in to the admin panel first."}
+### What protects the live site
 
-# 4. Nothing sensitive leaked into the client bundle
-curl -s https://your-shop.pages.dev/_astro/*.js | grep -c "supabase.co"
-#    → small number (the public project URL is fine)
-curl -s https://your-shop.pages.dev/_astro/*.js | grep -c "service_role"
-#    → 0
-```
+Since a publish is a `git push`, **write access to `main` is the real security
+boundary of the shop.** Recommended on GitHub:
 
-Then, in a browser:
-
-- [ ] The shop loads on <https://your-shop.pages.dev>
-- [ ] Products, prices in Rs, and the Bahawalpur delivery note are present
-- [ ] <https://your-shop.pages.dev/admin> asks you to sign in
-- [ ] You can sign in and see the catalogue
-- [ ] Adding a product with an image works
-- [ ] "Generate a promotion" → publish → the storefront shows the reduced price
-- [ ] `/admin` is **not** in Google (check `view-source:` for `noindex`)
+- branch protection on `main`: require the owner's account, disallow force-push
+- no other contributors with write access
+- deploy previews on pull requests, so a change is visible before it merges
 
 ---
 
-## 9. Everyday use
+## 5. Everyday use
 
 ### Changing a product
 
-Admin panel → Catalogue → Edit → Save. The write goes to the database and the
-API immediately asks Cloudflare Pages to rebuild, so the change is live in a
-couple of minutes with no commit and no push. The panel says which of those
-actually happened — "rebuilding now" versus "saved, but nothing will publish
-this" — so a silent no-op is not possible.
+Admin panel → Catalogue → Edit → Save. The panel says it is saved locally.
+Then Publish.
 
-This works because of `PAGES_DEPLOY_HOOK`. Without it the edit is still saved
-to the database but the site does not change, which is the failure mode worth
-knowing about: the admin panel will tell you so rather than implying success.
+### Adding a photo
 
-Only catalogue writes trigger a rebuild. Changing an enquiry's status does not,
-because it alters nothing in the static output and Cloudflare's free plan
-allows only a few hundred builds a month.
+In the product form, choose a file. It is written to
+`apps/web/public/images/products/<slug>-<hash>.<ext>` and added to the product.
+It goes live with the next publish, in the same commit as the product itself —
+which is the point: an image and the caption describing it are one change, so
+reverting one reverts the other.
 
-If you would rather publish by hand, the old route still works — it rewrites
-the committed snapshot and pushes, which triggers the same build:
+The hash in the filename means a changed photo is always a changed URL, so the
+cache headers stay correct.
 
-```bash
-bun run snapshot     # rewrites catalog.json from the live API
-git add apps/web/src/data/catalog.json
-git commit -m "Add the strawberry coin purse"
-git push
-```
+### Changing a promotion
+
+Admin panel → Promotions. "Generate a promotion" reads the catalogue, picks
+products, drafts the copy and the discount, and explains its reasoning. Nothing
+is written until you save the draft.
 
 ### Changing the theme
 
@@ -508,92 +264,98 @@ pages, the basket, the shipping page and every outbound WhatsApp message.
 
 ### Backing up
 
-Supabase: **Settings → Database → Backups** for daily snapshots. The catalogue
-is also in git, so the worst realistic loss is a week of promotion history.
+`catalog.json` is committed on every publish, so **the git history holds every
+published state of the catalogue** — you can see what a price was three months
+ago and which commit changed it.
+
+But that is not the same as a backup of your working catalogue, and the
+distinction matters:
+
+- `catalog.json` only ever reflects what you have **published**. Edits in the
+  panel that you have not published are not in git at all.
+- The export is **one-way**: SQLite → JSON. There is no import path back.
+
+So if you lose `data/catalog.sqlite`, the automatic recovery is "whatever was
+last published", and anything unpublished since is gone. That is a real gap in
+the design, and the reason the database file is worth copying rather than
+assuming git has it:
+
+```bash
+cp data/catalog.sqlite ~/backups/catalog-$(date +%F).sqlite
+```
+
+Until an import script exists, the practical advice is: **publish before you do
+anything risky.** Uncommitted work is the only thing at risk, and publishing is
+one button.
+
+Banners and products are both in the snapshot, so a copy of the SQLite file is
+a complete backup of the catalogue. Product images are in git already, so they
+need no separate backup.
 
 ---
 
-## 10. Troubleshooting
+## 6. Troubleshooting
 
-**`column "emailVerified" of relation "user" does not exist`**
+**The panel says the shop is behind, but I already pushed**
 
-Better Auth's schema was created with the identifiers unquoted, so Postgres
-lowercased them. Re-run `0002_better_auth.sql` after fixing the quotes — or,
-if you have no data yet:
+Compare the two timestamps in the status strip. If `last published` is *newer*
+than `last edited` but the site still looks old, the build is probably still
+running — Pages takes a couple of minutes. Check the deployment in the
+Cloudflare dashboard.
 
-```bash
-psql "$DATABASE_URL" -c 'DROP TABLE IF EXISTS "verification","account","session","user" CASCADE'
-psql "$DATABASE_URL" -c "DELETE FROM _migrations WHERE name = '0002_better_auth.sql'"
-bun run db:migrate
-```
+If the build *failed*, the site is still serving the last good deploy. Read the
+build log. A common cause is a product with a `details` key longer than 200
+characters, which passes the panel's form but fails validation on export.
 
-**`too many connections` from Supabase**
+**`dirty-tree` on publish**
 
-You are on the direct connection string. Switch to the pooler one (port 6543).
-
-**Admin panel: "The API is not connected"**
-
-`PUBLIC_API_URL` is empty, or the storefront was built before you set it. It
-is a build-time value — set it and rebuild, not just restart.
-
-**Admin panel: CORS error in the console**
-
-Your storefront origin is not in `BETTER_AUTH_TRUSTED_ORIGINS`. The exact
-origin, with scheme, no trailing slash. Update it on the API and restart it.
-
-**Signed in, but every admin page says "This area is for the shop owner."**
-
-You promoted the account after signing in and the 5-minute session cache is
-still holding the old role. Sign out and back in.
-
-**Image upload fails but everything else works**
-
-Check the bucket is named `product-images` and is **public**, and that
-`SUPABASE_SERVICE_ROLE_KEY` is the service-role key, not the `anon` key. The
-`anon` key cannot write.
-
-**The sales strip is not moving**
-
-Svelte prunes `@keyframes` declared inside a component's `<style>`. The
-animation and its keyframes must live in `apps/web/src/styles/global.css`.
-Check the built CSS actually contains the keyframes:
+Something outside the catalogue is staged. Unstage it and publish again:
 
 ```bash
-grep -o '@keyframes [a-z-]*' apps/web/dist/_astro/*.css | sort -u
+git restore --staged <file>
+bun run publish
 ```
 
-**A product shows but its page 404s**
+**The push failed but the commit exists**
 
-It was added after the last build. See [step 9](#9-everyday-use) — it needs
-`snapshot` and a deploy.
+Your change is safe, it just is not live. Check your connection, then:
+
+```bash
+git push origin HEAD:main
+```
+
+The panel says the same thing, including the exact command.
+
+**A product shows in the panel but its page 404s**
+
+It has not been published yet. That page is generated at build time from
+`catalog.json`, so it exists only after a publish.
+
+**The panel will not start — "EADDRINUSE"**
+
+Something is already on port 4322. It is almost certainly a previous copy of
+the panel; `bun run admin` again, or find it with `lsof -i :4322`.
+
+**`Unknown lockfile version` in the Cloudflare build**
+
+`BUN_VERSION` is unset or too old. Set it to `1.4.0` in the project's build
+variables.
+
+**A product photo is not updating**
+
+Check the filename changed. If it did not, the same bytes were uploaded, so the
+content hash is the same and the URL is the same. That is the caching working
+as designed — but if you edited the file outside the panel, run
+`bun run placeholders` or re-upload through the form.
 
 ---
 
 ## Production checklist
 
-```bash
-# Secrets are set, and NODE_ENV is not development
-grep -q 'NODE_ENV=production' .env && echo "NODE_ENV ok"
-
-# The auth secret is long enough and is not the example
-grep '^BETTER_AUTH_SECRET=.\{32,\}' .env > /dev/null && echo "secret ok"
-
-# No service-role key in the web app
-grep -r "service_role" apps/web/ --include="*.ts" --include="*.svelte" --include="*.astro" --include="*.json" \
-  && echo "!! LEAK — rotate the key in the Supabase dashboard"
-
-# Nothing in the client bundle
-grep -r "SUPABASE_SERVICE_ROLE\|BETTER_AUTH_SECRET" apps/web/ && echo "!! LEAK"
-```
-
-- [ ] `BETTER_AUTH_SECRET` is 32+ random characters, unique, not in git
-- [ ] `SEED_ADMIN_PASSWORD` removed from `.env` after `create-admin`
-- [ ] `NODE_ENV=production` — this is what stops Postgres error text reaching
-      the browser
-- [ ] `PUBLIC_SITE_URL` set, so canonical URLs and the sitemap are right
-- [ ] `PUBLIC_API_URL` points at the deployed API, over **https**
-- [ ] Your storefront origin is in `BETTER_AUTH_TRUSTED_ORIGINS`
-- [ ] Pooler connection string, not the direct one
-- [ ] Storage bucket is public; the service-role key is server-side only
-- [ ] `.env` is gitignored — `git check-ignore .env` should succeed
-- [ ] `/admin` is `noindex`
+- [ ] `PUBLIC_SITE_URL` is your real origin, so canonicals and the sitemap are right
+- [ ] `BUN_VERSION` is `1.4.0` in Cloudflare's build variables
+- [ ] `main` has branch protection; only your account can push
+- [ ] There is no `PUBLIC_API_URL` or `DATABASE_URL` in Cloudflare's settings (delete any leftovers)
+- [ ] `data/catalog.sqlite` is gitignored — `git check-ignore data/catalog.sqlite` should succeed
+- [ ] The panel is not reachable from anywhere but localhost
+- [ ] `bun run build` succeeds with no network access and no `.env` present

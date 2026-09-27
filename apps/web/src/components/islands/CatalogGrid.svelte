@@ -10,8 +10,8 @@
 
 <script lang="ts">
   import type { Category, ProductView } from '@crochet/shared';
-  import { CATEGORY_META, API_ROUTES } from '@crochet/shared';
-  import { revalidate, sortProducts, onSaleProducts } from '@/lib/api';
+  import { CATEGORY_META } from '@crochet/shared';
+  import { sortProducts, onSaleProducts } from '@/lib/api';
   import ProductCard from './ProductCard.svelte';
 
   interface Props {
@@ -38,7 +38,6 @@
   let sort = $state<Sort>('featured');
   let query = $state('');
   let reduced = $state(false);
-  let loading = $state(false);
 
   /* Read the URL once on mount, so a shared link opens filtered. */
   $effect(() => {
@@ -103,50 +102,21 @@
     return list;
   });
 
-  /* Pull a fresh copy from the API when the admin has published since the
-     build. Two things matter here:
+  /* This used to re-fetch the catalogue from the API whenever the category
+     changed, with a generation token so a slow response could not overwrite a
+     newer one, and an AbortController to cancel on unmount. All of that is
+     gone.
 
-       - A stale response must never overwrite a newer one. Rapid category
-         switching can land two requests out of order, and without a token
-         the slower one wins and the grid shows the wrong category.
-       - A request in flight when the island unmounts must not keep running
-         or write to state that no longer has an owner.
+     Filtering was already done client-side by the `visible` derived above —
+     the fetch was a *refresh*, not the filter. With no API there is nothing to
+     refresh from, and the products are baked into the page at build time, so
+     the derived list is not merely equivalent to what the fetch produced, it
+     is the same list without a round trip per category change.
 
-     Failure is silent and non-destructive: the baked list stays. */
-  let inFlight: AbortController | null = null;
-  let generation = 0;
-
-  async function refresh() {
-    inFlight?.abort();
-    const controller = new AbortController();
-    inFlight = controller;
-    const mine = ++generation;
-
-    loading = true;
-    try {
-      const params = new URLSearchParams();
-      if (active !== 'all') params.set('category', active);
-
-      const fresh = await revalidate<ProductView[]>(`${API_ROUTES.products}?${params}`, {
-        signal: controller.signal,
-      });
-
-      // A newer request has already been issued — drop this one.
-      if (mine !== generation) return;
-      if (fresh && fresh.length > 0) products = fresh;
-    } finally {
-      if (mine === generation) loading = false;
-    }
-  }
-
-  $effect(() => {
-    // Re-fetch when the category changes. `active` is the only reactive read.
-    void active;
-    void refresh();
-
-    // Abort anything still in flight when this island goes away.
-    return () => inFlight?.abort();
-  });
+     `loading` went with it. It existed to dim the grid and say "Checking for
+     new pieces…" while a request was in flight. Filtering a list this size is
+     synchronous, so that message would be a lie about work that is not
+     happening. */
 </script>
 
 <div class="catalog">
@@ -218,16 +188,12 @@
   {/if}
 
   <p class="count" aria-live="polite">
-    {#if loading && visible.length === 0}
-      Checking for new pieces…
-    {:else}
-      {visible.length}
-      {visible.length === 1 ? 'piece' : 'pieces'}
-      {#if active !== 'all'}
-        in {CATEGORY_META.find((c) => c.id === active)?.title}
-      {/if}
-      {#if reduced}&nbsp;· reduced{/if}
+    {visible.length}
+    {visible.length === 1 ? 'piece' : 'pieces'}
+    {#if active !== 'all'}
+      in {CATEGORY_META.find((c) => c.id === active)?.title}
     {/if}
+    {#if reduced}&nbsp;· reduced{/if}
   </p>
 
   {#if visible.length === 0}
@@ -247,7 +213,7 @@
       </button>
     </div>
   {:else}
-    <ul class="grid" class:grid--loading={loading}>
+    <ul class="grid">
       {#each visible as product (product.id)}
         <li>
           <ProductCard {product} />
@@ -349,7 +315,6 @@
   }
 
   /* A brief dim while revalidating, so a swap does not feel like a jump. */
-  .grid--loading { opacity: 0.6; transition: opacity 140ms ease; }
 
   .empty {
     display: grid;
