@@ -49,9 +49,21 @@ id_ed25519
 
 
 # local data
+# SQLite, and the two sidecar files it creates in WAL mode.
+#
+# `*.sqlite` alone is not enough: WAL mode writes `catalog.sqlite-wal` and
+# `catalog.sqlite-shm` alongside the database, and neither matches that pattern.
+# A migration commit picked all four up before these lines existed, which put
+# two binary blobs in the history — and a stale `.sqlite-wal` restored from git
+# is a corrupt database, not just a large one.
 *.sqlite
 *.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
 
 # logs
 *.log
