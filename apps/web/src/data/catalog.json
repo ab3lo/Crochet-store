@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T13:40:50.668Z",
+  "generatedAt": "2026-09-27T13:52:15.707Z",
   "products": [
     {
       "id": "3b282034-151e-44e5-a228-c11f6b0fc672",
@@ -70,7 +70,7 @@
       "id": "feca65e4-2787-4d11-bf86-3639d53c3af7",
       "slug": "back-to-school-0uf1",
       "name": "Back to school 2026",
-      "template": "stitch-strip",
+      "template": "editorial",
       "status": "live",
       "headline": "New term, new charms",
       "subhead": "Clip a bag, a pencil case, a best friend",
@@ -82,10 +82,10 @@
       "productIds": [],
       "startsAt": "2026-09-27T11:14:06.986Z",
       "endsAt": "2026-10-04T11:14:06.986Z",
-      "revision": 0,
+      "revision": 1,
       "rationale": "Back to school is in season and inside its 21-day lead window. Using the **Stitch strip** component, which reads best for a dated celebration. Offer set to 15% off, attached to the 4 highest-scoring product(s). Headroom check: Strawberry coin purse keychain (~25%), Bobble frog keyring (~25%), Raffia summer bucket bag (~26%), Everlasting rose bouquet (~25%).",
       "createdAt": "2026-09-27T11:14:06.986Z",
-      "updatedAt": "2026-09-27T13:20:24.281Z",
+      "updatedAt": "2026-09-27T13:52:13.562Z",
       "products": [],
       "isLive": true,
       "salePriceCents": 0
