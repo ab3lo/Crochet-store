@@ -95,15 +95,52 @@ async function foreignStagedPaths(): Promise<string[]> {
   return (await stagedPaths()).filter((p) => !isPublishable(p));
 }
 
+/**
+ * Is there anything in the publishable paths that is not already committed?
+ *
+ * ## Why this asks git and not the database
+ *
+ * The old check was `exportCatalog().changed` — "did writing the file change its
+ * contents?" — and it was the wrong question, in a way that silently ate
+ * changes. That answer is about the *database*, but what a publish has to do is
+ * about the *repository*. The two disagree whenever the file is already correct
+ * but not yet committed, and then the publish says "nothing to publish" and does
+ * nothing.
+ *
+ * Two ordinary ways to reach that state:
+ *
+ *   • `bun run export` was run first, which leaves the file matching the
+ *     database without committing it — the obvious way to preview a change, and
+ *     a documented command.
+ *   • the file was edited by hand.
+ *
+ * In both cases the owner presses Publish, is told there is nothing to publish,
+ * and the change stays on this machine indefinitely. That is the worst answer
+ * available: confidently wrong, and wrong about the only thing the button does.
+ *
+ * `git status --porcelain` over the publish paths answers the real question,
+ * and picks up the neighbouring cases for free — a new image, a deleted image,
+ * a hand-edited file — because git is what will have to carry them into the
+ * commit anyway.
+ */
+async function catalogueDiffersFromHead(): Promise<boolean> {
+  const out = await git(['status', '--porcelain', '--', ...PUBLISH_PATHS]);
+  return out.trim().length > 0;
+}
+
 export async function publish(opts: PublishOptions = {}): Promise<PublishResult> {
   try {
     /* ── 1. The catalogue becomes a committed file ──────────────────── */
 
     const exported = await exportCatalog();
 
-    /* ── 2. Nothing changed, so there is nothing to do ────────────────── */
+    /* ── 2. Nothing to ship, so there is nothing to do ────────────────── */
 
-    if (!exported.changed) {
+    // Asked of git, not of the export — see `catalogueDiffersFromHead`. The
+    // export has already run by this point, so the file on disk is whatever the
+    // database says it should be; the only question left is whether that has
+    // been committed.
+    if (!(await catalogueDiffersFromHead())) {
       return {
         state: 'nothing-to-publish',
         message:
