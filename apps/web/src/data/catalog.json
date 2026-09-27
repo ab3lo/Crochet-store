@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T10:39:57.106Z",
+  "generatedAt": "2026-09-27T11:09:58.049Z",
   "products": [
     {
       "id": "11111111-1111-4111-8111-000000000001",
@@ -25,18 +25,8 @@
       "hidden": false,
       "sortOrder": 10,
       "createdAt": "2026-07-25T10:23:28.488Z",
-      "updatedAt": "2026-09-27T10:38:35.724Z",
-      "sale": {
-        "bannerId": "6423a5b6-1b38-4e7a-95e5-782e30688dbb",
-        "bannerSlug": "back-to-school-7pws",
-        "bannerName": "Back to school 2026",
-        "headline": "New term, new charms",
-        "template": "bloom",
-        "percentOff": 15,
-        "code": "TERM15",
-        "salePriceCents": 1190,
-        "endsAt": "2026-10-04T10:23:28.515Z"
-      }
+      "updatedAt": "2026-09-27T10:48:00.078Z",
+      "sale": null
     },
     {
       "id": "11111111-1111-4111-8111-000000000002",
@@ -117,17 +107,7 @@
       "sortOrder": 40,
       "createdAt": "2026-09-19T10:23:28.488Z",
       "updatedAt": "2026-09-19T10:23:28.488Z",
-      "sale": {
-        "bannerId": "6423a5b6-1b38-4e7a-95e5-782e30688dbb",
-        "bannerSlug": "back-to-school-7pws",
-        "bannerName": "Back to school 2026",
-        "headline": "New term, new charms",
-        "template": "bloom",
-        "percentOff": 15,
-        "code": "TERM15",
-        "salePriceCents": 3740,
-        "endsAt": "2026-10-04T10:23:28.515Z"
-      }
+      "sale": null
     },
     {
       "id": "11111111-1111-4111-8111-000000000005",
@@ -181,17 +161,7 @@
       "sortOrder": 60,
       "createdAt": "2026-08-24T10:23:28.489Z",
       "updatedAt": "2026-08-24T10:23:28.489Z",
-      "sale": {
-        "bannerId": "6423a5b6-1b38-4e7a-95e5-782e30688dbb",
-        "bannerSlug": "back-to-school-7pws",
-        "bannerName": "Back to school 2026",
-        "headline": "New term, new charms",
-        "template": "bloom",
-        "percentOff": 15,
-        "code": "TERM15",
-        "salePriceCents": 1020,
-        "endsAt": "2026-10-04T10:23:28.515Z"
-      }
+      "sale": null
     },
     {
       "id": "11111111-1111-4111-8111-000000000007",
@@ -244,17 +214,7 @@
       "sortOrder": 80,
       "createdAt": "2026-09-09T10:23:28.489Z",
       "updatedAt": "2026-09-09T10:23:28.489Z",
-      "sale": {
-        "bannerId": "6423a5b6-1b38-4e7a-95e5-782e30688dbb",
-        "bannerSlug": "back-to-school-7pws",
-        "bannerName": "Back to school 2026",
-        "headline": "New term, new charms",
-        "template": "bloom",
-        "percentOff": 15,
-        "code": "TERM15",
-        "salePriceCents": 4930,
-        "endsAt": "2026-10-04T10:23:28.515Z"
-      }
+      "sale": null
     },
     {
       "id": "11111111-1111-4111-8111-000000000009",
@@ -364,76 +324,5 @@
       "sale": null
     }
   ],
-  "banners": [
-    {
-      "id": "6423a5b6-1b38-4e7a-95e5-782e30688dbb",
-      "slug": "back-to-school-7pws",
-      "name": "Back to school 2026",
-      "template": "bloom",
-      "status": "live",
-      "headline": "New term, new charms",
-      "subhead": "Clip a bag, a pencil case, a best friend",
-      "ctaLabel": "Shop the drop",
-      "ctaHref": "/strawberry-coin-purse-keychain",
-      "percentOff": 15,
-      "code": "TERM15",
-      "tint": null,
-      "productIds": [
-        "11111111-1111-4111-8111-000000000001",
-        "11111111-1111-4111-8111-000000000006",
-        "11111111-1111-4111-8111-000000000008",
-        "11111111-1111-4111-8111-000000000004"
-      ],
-      "startsAt": "2026-09-27T10:23:28.515Z",
-      "endsAt": "2026-10-04T10:23:28.515Z",
-      "revision": 4,
-      "rationale": "Back to school is in season and inside its 21-day lead window. Using the **Stitch strip** component, which reads best for a dated celebration. Offer set to 15% off, attached to the 4 highest-scoring product(s). Headroom check: Strawberry coin purse keychain (~25%), Bobble frog keyring (~25%), Raffia summer bucket bag (~26%), Everlasting rose bouquet (~25%).",
-      "createdAt": "2026-09-27T10:23:28.515Z",
-      "updatedAt": "2026-09-27T10:39:51.276Z",
-      "products": [
-        {
-          "id": "11111111-1111-4111-8111-000000000001",
-          "slug": "strawberry-coin-purse-keychain",
-          "name": "Strawberry coin purse keychain",
-          "priceCents": 1400,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/strawberry-coin-purse-keychain.svg"
-          ]
-        },
-        {
-          "id": "11111111-1111-4111-8111-000000000006",
-          "slug": "bobble-frog-keyring",
-          "name": "Bobble frog keyring",
-          "priceCents": 1200,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/bobble-frog-keyring.svg"
-          ]
-        },
-        {
-          "id": "11111111-1111-4111-8111-000000000008",
-          "slug": "raffia-summer-bucket-bag",
-          "name": "Raffia summer bucket bag",
-          "priceCents": 5800,
-          "compareAtCents": 7000,
-          "images": [
-            "/images/products/raffia-summer-bucket-bag.svg"
-          ]
-        },
-        {
-          "id": "11111111-1111-4111-8111-000000000004",
-          "slug": "everlasting-rose-bouquet",
-          "name": "Everlasting rose bouquet",
-          "priceCents": 4400,
-          "compareAtCents": null,
-          "images": [
-            "/images/products/everlasting-rose-bouquet.svg"
-          ]
-        }
-      ],
-      "isLive": true,
-      "salePriceCents": 0
-    }
-  ]
+  "banners": []
 }
