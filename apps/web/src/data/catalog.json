@@ -1,25 +1,6 @@
 {
-  "generatedAt": "2026-09-27T14:32:45.890Z",
+  "generatedAt": "2026-09-27T14:51:41.816Z",
   "products": [
-    {
-      "id": "9708e77e-0c57-4553-b8fb-d57dbef5dbec",
-      "slug": "was-price-check",
-      "name": "Was Price Check",
-      "tagline": "",
-      "description": "",
-      "priceCents": 250000,
-      "compareAtCents": 500000,
-      "category": "keychains",
-      "images": [],
-      "details": {},
-      "stock": 0,
-      "madeToOrder": false,
-      "hidden": false,
-      "sortOrder": 0,
-      "createdAt": "2026-09-27T14:29:17.345Z",
-      "updatedAt": "2026-09-27T14:29:17.345Z",
-      "sale": null
-    },
     {
       "id": "3b282034-151e-44e5-a228-c11f6b0fc672",
       "slug": "jellyfish-keychain",
