@@ -26,6 +26,39 @@
   const remaining = $derived(timeLeft(banner.endsAt));
 
   const hero = $derived(banner.products[0] ?? null);
+
+  /**
+   * The hero's two prices, in the same order as everywhere else on the shop.
+   *
+   * This used to print the hero's normal price as the big figure and the
+   * *reduced* one as the struck-through figure beside it, with an arrow — so a
+   * 10% campaign read `Rs 500  Rs 450 →`, striking out the price the customer
+   * actually pays and pointing the arrow at nothing. The product page and the
+   * card both have it the other way round: the reduced price is the one you
+   * read, the original is the one that gets struck.
+   *
+   * The hero can be discounted two ways, and the campaign wins, because that is
+   * what the banner is advertising:
+   *
+   *   campaign   `percentOff` off the hero's own price
+   *   was price  the hero already carries a `compareAtCents`
+   */
+  const pricing = $derived.by(() => {
+    if (!hero) return null;
+
+    if (banner.percentOff > 0) {
+      return {
+        now: Math.round(hero.priceCents * (1 - banner.percentOff / 100)),
+        was: hero.priceCents,
+      };
+    }
+
+    if (hero.compareAtCents != null && hero.compareAtCents > hero.priceCents) {
+      return { now: hero.priceCents, was: hero.compareAtCents };
+    }
+
+    return { now: hero.priceCents, was: null };
+  });
 </script>
 
 <section
@@ -59,15 +92,12 @@
             <span class="bnr-offer-word">off</span>
           </span>
         {/if}
-        {#if hero}
+        {#if hero && pricing}
           <span class="ed-price">
-            <span class="price">{money(hero.priceCents)}</span>
-            {#if banner.percentOff > 0}
-              <span class="price-was">
-                {money(Math.round(hero.priceCents * (1 - banner.percentOff / 100)))}
-                &nbsp;→&nbsp;
-              </span>
+            {#if pricing.was != null}
+              <span class="price-was">{money(pricing.was)}</span>
             {/if}
+            <span class="price">{money(pricing.now)}</span>
           </span>
         {/if}
         <a class="bnr-cta" href={banner.ctaHref}>{banner.ctaLabel}</a>

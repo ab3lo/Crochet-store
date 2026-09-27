@@ -35,17 +35,8 @@ export function timeLeft(endsAt: string | null, now: Date = new Date()): string 
 export function stockLabel(
   product: { stock: number; madeToOrder: boolean },
 ): { text: string; urgent: boolean } {
-  if (product.madeToOrder) return { text: 'Made to order', urgent: false };
+  if (product.madeToOrder) return { text: 'Made on Demand', urgent: false };
   if (product.stock === 0) return { text: 'Currently out of stock', urgent: true };
   if (product.stock <= 3) return { text: `Only ${product.stock} left`, urgent: true };
   return { text: 'In stock', urgent: false };
 }
-
-export const hasDiscount = (p: {
-  priceCents: number;
-  compareAtCents: number | null;
-  sale?: { salePriceCents: number; percentOff: number } | null;
-}): boolean => {
-  if (p.sale && p.sale.salePriceCents < p.priceCents) return true;
-  return p.compareAtCents !== null && p.compareAtCents > p.priceCents;
-};

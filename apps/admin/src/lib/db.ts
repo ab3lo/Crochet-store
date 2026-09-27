@@ -266,6 +266,65 @@ if (!metaVersion) {
   );
 }
 
+/* ── The publish record ────────────────────────────────────────────────────
+   A row in `meta`, written by `publish()` and read by the dashboard. It exists
+   because "has the site seen this catalogue?" cannot be answered by looking at
+   `catalog.json`.
+
+   It used to be answered by that file's own `generatedAt`, which is wrong in a
+   way that stays invisible until it matters. `generatedAt` says when the *file*
+   was written, and the file is written by two different things: a publish, and
+   `bun run export`. So running the export script — a documented command, and
+   the obvious way to see what would ship — stamped the file with "now", the
+   dashboard read that as "published just now", and the panel reported **the
+   shop is in sync** with a catalogue the shop had never seen.
+
+   Worse, the same export left `catalog.json` already matching the database, so
+   the next publish found nothing to write, answered "nothing to publish", and
+   the change could not be shipped at all without a hand-written commit.
+
+   A publish is the only thing that makes the site change, so it is the only
+   thing that gets a say here. State derived from the file cannot tell "someone
+   looked" from "someone shipped". */
+
+const PUBLISHED_KEY = 'published_at';
+
+function readMeta(key: string): string | null {
+  const row = db.query(`SELECT value FROM meta WHERE key = ?`).get<{ value: string }>(key);
+  return row?.value ?? null;
+}
+
+function writeMeta(key: string, value: string): void {
+  db.query(
+    `INSERT INTO meta (key, value) VALUES (?, ?)
+       ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
+  ).run(key, value);
+}
+
+/**
+ * When the catalogue last reached the live site, or null if it never has.
+ *
+ * Null is a real state rather than a missing value: a fresh database has
+ * products and no publish behind them, and the dashboard has to be able to say
+ * exactly that.
+ */
+export function lastPublishedAt(): string | null {
+  return readMeta(PUBLISHED_KEY);
+}
+
+/**
+ * Record a successful publish.
+ *
+ * Called *after* the push rather than before, so a crash or a failed push leaves
+ * the panel under-reporting instead of over-reporting. Being told "not published"
+ * when it might be sends the owner to press the button again, which is harmless.
+ * Being told "published" when it is not is the exact lie this row exists to
+ * prevent.
+ */
+export function markPublished(at: string = nowIso()): void {
+  writeMeta(PUBLISHED_KEY, at);
+}
+
 /* ── JSON column helpers ──────────────────────────────────────────────────
    Fail loudly. A corrupt array silently becoming `[]` would empty a product's
    gallery with no error anywhere, which is the kind of bug that is only

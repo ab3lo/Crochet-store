@@ -539,7 +539,7 @@
                 <span class="choice-name">{p.name}</span>
                 <span class="muted">
                   {CATEGORY_LABELS[p.category]} ·
-                  {p.madeToOrder ? 'made to order' : `${p.stock} left`}
+                  {p.madeToOrder ? 'made on demand' : `${p.stock} left`}
                 </span>
               </label>
             </li>

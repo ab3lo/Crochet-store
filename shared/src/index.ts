@@ -86,7 +86,7 @@ export const PAYMENT_TERMS = {
   methods: PAYMENT_METHODS,
 
   /** Headline, for the notice. */
-  headline: 'Made to order, paid in advance.',
+  headline: 'Made on Demand, paid in advance.',
 
   /**
    * The notice body. Says who pays, how much and how. Built from the values
@@ -613,24 +613,78 @@ const productFields = {
 };
 
 /** Full create payload. Every optional field gets its documented default. */
-export const productInputSchema = z.object({
-  ...productFields,
-  tagline: productFields.tagline.default(''),
-  description: productFields.description.default(''),
-  compareAtCents: productFields.compareAtCents.default(null),
-  images: productFields.images.default([]),
-  details: productFields.details.default({}),
-  stock: productFields.stock.default(0),
-  madeToOrder: productFields.madeToOrder.default(false),
-  hidden: productFields.hidden.default(false),
-  sortOrder: productFields.sortOrder.default(0),
-});
+export const productInputSchema = noFakeDiscount(
+  z.object({
+    ...productFields,
+    tagline: productFields.tagline.default(''),
+    description: productFields.description.default(''),
+    compareAtCents: productFields.compareAtCents.default(null),
+    images: productFields.images.default([]),
+    details: productFields.details.default({}),
+    stock: productFields.stock.default(0),
+    madeToOrder: productFields.madeToOrder.default(false),
+    hidden: productFields.hidden.default(false),
+    sortOrder: productFields.sortOrder.default(0),
+  }),
+);
+
+/**
+ * A "was" price at or below the price is refused.
+ *
+ * This is the check that was missing, and its absence is a class of quiet
+ * failure rather than one bad row. The storefront only renders a discount when
+ * `compareAtCents > priceCents` — in three places, each with its own copy of
+ * that test — so a "was" of 100 against a price of 200 saved perfectly
+ * happily, was reported as saved, and then displayed as *no discount at all*.
+ * The owner had filled in a field, been told it worked, and seen nothing change
+ * on the shop, with nothing anywhere saying why.
+ *
+ * Enforced here rather than in the form because the form is not the only way
+ * in — the seed, `scripts/`, and the API all validate through this schema, and
+ * a rule that lives in one caller is a rule the next caller forgets. The form
+ * carries the same rule as a friendlier message, not as the only guard.
+ *
+ * `.superRefine` rather than a `.refine` on `compareAtCents`, because the rule
+ * is about the *pair* of fields and a per-field refinement can only see itself.
+ *
+ * The `typeof` guard is what makes this safe on `productPatchSchema`, which is
+ * `.partial()`: a patch that moves only the price legitimately arrives with no
+ * `compareAtCents` to compare against, and one that moves only the "was" price
+ * arrives with no `priceCents`. Those are not violations, they are incomplete —
+ * the other number is in the row, not in the request. So the rule applies only
+ * where both are actually present, and the two single-field patches that a form
+ * legitimately sends keep working.
+ *
+ * Applied *after* `.partial()` and after the defaults, because `.superRefine`
+ * returns a `ZodEffects` and neither of those exists on one.
+ */
+function noFakeDiscount<T extends z.ZodTypeAny>(schema: T) {
+  return schema.superRefine((value, ctx) => {
+    const { priceCents, compareAtCents } = value as {
+      priceCents?: unknown;
+      compareAtCents?: unknown;
+    };
+
+    if (typeof priceCents !== 'number' || typeof compareAtCents !== 'number') return;
+
+    if (compareAtCents <= priceCents) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['compareAtCents'],
+        message:
+          compareAtCents === priceCents
+            ? 'The "was" price is the same as the price, so there is nothing to show.'
+            : 'The "was" price has to be higher than the price.',
+      });
+    }
+  });
+}
 
 /**
  * A partial update. Absent keys stay absent, so a PATCH touches only what it
  * names. Use this — never `productInputSchema.partial()` — for updates.
  */
-export const productPatchSchema = z.object(productFields).partial();
+export const productPatchSchema = noFakeDiscount(z.object(productFields).partial());
 
 /**
  * The banner fields, with no defaults — for the same reason as

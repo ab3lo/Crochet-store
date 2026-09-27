@@ -9,7 +9,7 @@
 
 <script lang="ts">
   import type { ProductView } from '@crochet/shared';
-  import { money, stockLabel, hasDiscount } from '@/lib/format';
+  import { money, stockLabel } from '@/lib/format';
   import { cart } from '@/lib/stores/cart';
   import AddToCartInline from './AddToCartInline.svelte';
 
@@ -21,7 +21,40 @@
 
   let { product, showHidden = false }: Props = $props();
 
-  const onSale = $derived(hasDiscount(product));
+  /**
+   * The two prices this card prints, or one of them.
+   *
+   * There are two ways a product can be discounted, and they are opposites —
+   * which is exactly why this used to be wrong:
+   *
+   *   campaign   the banner re-prices the piece, so the *banner's* figure is
+   *              charged and the product's own price is the struck "was"
+   *   was price  the product carries its own `compareAtCents`, so `priceCents`
+   *              is charged and the *compare-at* figure is the struck "was"
+   *
+   * The card used to hard-code the struck figure to `priceCents`. That is right
+   * for a campaign and wrong for a "was" price, so a discounted product printed
+   * `Rs 3,000  Rs 3,000` — the same number twice, with the real saving nowhere
+   * on the page. The product page branched on the two cases and was always
+   * right; the card had no branch at all.
+   *
+   * Both numbers now come from one place so they cannot drift apart again, and
+   * `onSale` is read off this rather than asked separately — a card cannot end
+   * up styled as a sale while printing no struck price, or the reverse.
+   */
+  const pricing = $derived.by(() => {
+    if (product.sale && product.sale.salePriceCents < product.priceCents) {
+      return { now: product.sale.salePriceCents, was: product.priceCents };
+    }
+
+    if (product.compareAtCents != null && product.compareAtCents > product.priceCents) {
+      return { now: product.priceCents, was: product.compareAtCents };
+    }
+
+    return { now: product.priceCents, was: null };
+  });
+
+  const onSale = $derived(pricing.was != null);
   const stock = $derived(stockLabel(product));
   const image = $derived(product.images[0] ?? '/images/placeholder.svg');
   /**
@@ -53,7 +86,7 @@
         {product.sale.percentOff}% off
       </span>
     {:else if product.madeToOrder}
-      <span class="stamp stamp--soft">Made to order</span>
+      <span class="stamp stamp--soft">Made on Demand</span>
     {/if}
 
     {#if showHidden && product.hidden}
@@ -83,9 +116,9 @@
 
     <div class="card-foot">
       <p class="card-price">
-        <span class="price">{money(product.sale?.salePriceCents ?? product.priceCents)}</span>
-        {#if onSale}
-          <span class="price-was">{money(product.priceCents)}</span>
+        <span class="price">{money(pricing.now)}</span>
+        {#if pricing.was != null}
+          <span class="price-was">{money(pricing.was)}</span>
         {/if}
       </p>
 

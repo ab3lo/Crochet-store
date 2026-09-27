@@ -117,5 +117,50 @@ const createdImages = productInputSchema.safeParse({
 });
 check('create keeps a local image', createdImages.success && createdImages.data.images.length === 1, createdImages.error?.issues);
 
+console.log('\na "was" price only counts when it is above the price\n');
+
+const base = { name: 'A bag', slug: 'a-bag', category: 'bags' as const };
+
+const realDiscount = productInputSchema.safeParse({ ...base, priceCents: 2500, compareAtCents: 5000 });
+check('a higher "was" price is accepted', realDiscount.success, realDiscount.error?.issues);
+
+const sameAsPrice = productInputSchema.safeParse({ ...base, priceCents: 2500, compareAtCents: 2500 });
+check(
+  'a "was" price equal to the price is refused',
+  !sameAsPrice.success,
+  sameAsPrice.error?.issues,
+);
+
+const belowPrice = productInputSchema.safeParse({ ...base, priceCents: 5000, compareAtCents: 2500 });
+check(
+  'a "was" price below the price is refused',
+  !belowPrice.success,
+  belowPrice.error?.issues,
+);
+
+const noDiscount = productInputSchema.safeParse({ ...base, priceCents: 2500 });
+check('no "was" price at all is still fine', noDiscount.success, noDiscount.error?.issues);
+
+// The half that matters most. A PATCH legitimately arrives with only one of
+// the two numbers, and that is incomplete rather than wrong — the other number
+// is in the row, not in the request. Refusing those would break every
+// single-field edit the panel sends.
+const patchPriceOnly = productPatchSchema.safeParse({ priceCents: 5000 });
+check(
+  'a price-only patch is not judged against a missing "was" price',
+  patchPriceOnly.success,
+  patchPriceOnly.error?.issues,
+);
+
+const patchWasOnly = productPatchSchema.safeParse({ compareAtCents: 5000 });
+check(
+  'a "was"-only patch is not judged against a missing price',
+  patchWasOnly.success,
+  patchWasOnly.error?.issues,
+);
+
+const patchBoth = productPatchSchema.safeParse({ priceCents: 5000, compareAtCents: 2500 });
+check('a patch carrying both is still checked', !patchBoth.success, patchBoth.error?.issues);
+
 console.log(failures === 0 ? '\n✓ all checks passed\n' : `\n✗ ${failures} check(s) failed\n`);
 process.exit(failures === 0 ? 0 : 1);

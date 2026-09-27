@@ -48,8 +48,11 @@
   let slug = $state(initial.slug ?? '');
   let tagline = $state(initial.tagline ?? '');
   let description = $state(initial.description ?? '');
-  let price = $state(((initial.priceCents ?? 0) / 100).toString());
-  let compareAt = $state(
+
+  // Seeded as strings, typed as `string | number` because `bind:value` on a
+  // `type="number"` input replaces them with numbers. See `toCents` below.
+  let price = $state<string | number>(((initial.priceCents ?? 0) / 100).toString());
+  let compareAt = $state<string | number>(
     initial.compareAtCents ? (initial.compareAtCents / 100).toString() : '',
   );
   let category = $state<Category>(initial.category ?? 'keychains');
@@ -86,6 +89,64 @@
     bouquets: 'Bouquets',
     custom: 'Custom orders',
   };
+
+  /* ── Prices ──────────────────────────────────────────────────────────── */
+
+  /**
+   * Major units to integer cents, or null for an empty box.
+   *
+   * `string | number` is not decoration. These fields are seeded as strings, but
+   * `bind:value` on `<input type="number">` hands Svelte a **number** the moment
+   * anyone types in them — Svelte coerces number inputs — and an emptied field
+   * comes back as `''`. So the same variable is a string before the first
+   * keystroke, a number after it, and `''` after a second one.
+   *
+   * That is why this cannot call a string method on its argument. It did, and
+   * `v.trim is not a function` was thrown from inside a `$derived` on every
+   * keystroke, which took the reactivity down with it: the panel stopped
+   * updating and the field kept showing its default hint no matter what was
+   * typed into it.
+   *
+   * `Number()` rather than `+v` because the field can also hold `"12abc"`, and
+   * `Number` gives `NaN` for that, which `Number.isFinite` rejects — where `+v`
+   * would quietly make it 12.
+   */
+  const toCents = (v: string | number): number | null => {
+    if (v === '' || v == null) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.max(0, Math.round(n * 100)) : null;
+  };
+
+  const priceCents = $derived(toCents(price));
+  const wasCents = $derived(toCents(compareAt));
+
+  /**
+   * The rule the storefront used to apply silently.
+   *
+   * A "was" at or below the price is not a discount, so the shop rendered no
+   * discount and offered no explanation. The owner filled in a field, pressed
+   * save, was told it saved, and saw nothing change on the site. Saying it here,
+   * under the field, before the round trip, is the whole fix.
+   *
+   * `productInputSchema`/`productPatchSchema` refuse the same thing, so this is
+   * the message rather than the guard.
+   */
+  const wasProblem = $derived(
+    wasCents == null || priceCents == null
+      ? ''
+      : wasCents < priceCents
+        ? 'The "was" price is lower than the price, which is a rise, not a discount.'
+        : wasCents === priceCents
+          ? 'The "was" price is the same as the price, so there is nothing to show.'
+          : '',
+  );
+
+  /** What the saving will be called on the shop, or null when there isn't one. */
+  const discountPercent = $derived(
+    wasCents != null && priceCents != null && wasCents > priceCents
+      ? Math.round(((wasCents - priceCents) / wasCents) * 100)
+      : null,
+  );
 
   /* Offer a slug from the name until the user edits it themselves. */
   let slugTouched = $state(!isNew);
@@ -180,14 +241,16 @@
   }
 
   function payload() {
-    const toCents = (v: string) => Math.max(0, Math.round(Number(v || 0) * 100));
     return {
       name: name.trim(),
       slug: slug.trim(),
       tagline: tagline.trim(),
       description: description.trim(),
-      priceCents: toCents(price),
-      compareAtCents: compareAt.trim() ? toCents(compareAt) : null,
+      // The shared `toCents`, not a second copy of it. An empty price is 0
+      // because the column is NOT NULL; an empty "was" is null, because null
+      // is what "no discount" means and 0 is a real, absurd price.
+      priceCents: toCents(price) ?? 0,
+      compareAtCents: toCents(compareAt),
       category,
       images,
       details: Object.fromEntries(
@@ -204,10 +267,20 @@
 
   async function save(event: SubmitEvent) {
     event.preventDefault();
-    saving = true;
     error = '';
     fields = {};
 
+    // Checked here as well as in the schema, because the schema's answer comes
+    // back as a generic "please fix the highlighted fields" with nothing
+    // highlighted. The schema is still the guard; this is the version that
+    // names the problem, and it does it without a round trip.
+    if (wasProblem) {
+      error = wasProblem;
+      fields = { compareAtCents: wasProblem };
+      return;
+    }
+
+    saving = true;
     const body = payload();
 
     // `savedId` rather than `initial.id`: an upload may have created the row
@@ -324,7 +397,26 @@
         </div>
         <div class="field">
           <label for="pf-compare">Was <span class="optional">optional</span></label>
-          <input id="pf-compare" type="number" step="0.01" min="0" bind:value={compareAt} />
+          <input
+            id="pf-compare"
+            type="number"
+            step="0.01"
+            min="0"
+            bind:value={compareAt}
+            aria-invalid={wasProblem ? 'true' : undefined}
+            aria-describedby="pf-compare-note"
+          />
+          {#if wasProblem}
+            <p class="field-error" id="pf-compare-note">{wasProblem}</p>
+          {:else if discountPercent != null}
+            <p class="hint" id="pf-compare-note">
+              {discountPercent}% off. The shop charges the price above either way.
+            </p>
+          {:else}
+            <p class="hint" id="pf-compare-note">
+              The struck-through price. Leave it empty for no discount.
+            </p>
+          {/if}
         </div>
         <div class="field">
           <label for="pf-category">Category</label>
@@ -344,7 +436,7 @@
         <div class="field field--check">
           <label for="pf-mto">
             <input id="pf-mto" type="checkbox" bind:checked={madeToOrder} />
-            Made to order
+            Made on Demand
           </label>
         </div>
         <div class="field">

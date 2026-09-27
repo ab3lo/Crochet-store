@@ -40,6 +40,7 @@
 
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { markPublished } from '../db';
 import { exportCatalog } from './export';
 import type { PublishResult, PublishState } from '../publish';
 import { isPublishable, PRODUCTION_BRANCH, PUBLISH_PATHS, REMOTE, ROOT } from '../paths';
@@ -200,6 +201,12 @@ export async function publish(opts: PublishOptions = {}): Promise<PublishResult>
           `have connection.\n\n${(err as Error).message}`,
       };
     }
+
+    // The site has the catalogue now, so record that. This is the only place
+    // that writes the panel's "last published" stamp, which is the whole reason
+    // it can be trusted: an export regenerates the file without shipping
+    // anything, and must not move this.
+    markPublished();
 
     return {
       state: 'pushed',

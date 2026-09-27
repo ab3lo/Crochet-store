@@ -186,7 +186,7 @@ const CATEGORY_NOUN: Record<string, [string, string]> = {
   bags: ['tote bags', 'bags'],
   purses: ['purses', 'pouches'],
   bouquets: ['crocheted bouquets', 'flowers'],
-  custom: ['custom pieces', 'made-to-order work'],
+  custom: ['custom pieces', 'made-on-demand work'],
 };
 
 const nounFor = (ids: string[], products: Product[]): string => {

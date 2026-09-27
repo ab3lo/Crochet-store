@@ -218,7 +218,7 @@
           </p>
           <p class="row-meta">
             {CATEGORY_LABELS[product.category]} ·
-            {product.madeToOrder ? 'made to order' : `${product.stock} in stock`} ·
+            {product.madeToOrder ? 'made on demand' : `${product.stock} in stock`} ·
             {money(product.priceCents)}
           </p>
         </div>
