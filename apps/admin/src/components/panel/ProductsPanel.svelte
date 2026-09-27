@@ -23,6 +23,17 @@
 
   type Draft = Partial<ProductView> & { id?: string };
 
+  interface Props {
+    /**
+     * Called after any successful write. The dashboard uses it to refresh the
+     * publish bar — without it, "last edited" sits at its old value after an
+     * edit, which reads as the change not having registered.
+     */
+    onChanged?: () => void;
+  }
+
+  let { onChanged = () => {} }: Props = $props();
+
   let products = $state<ProductView[]>([]);
   let loading = $state(true);
   const flash = createFlash();
@@ -71,6 +82,26 @@
     void load();
   });
 
+  /**
+   * Swap one row for the server's version of it, without re-fetching.
+   *
+   * Every write endpoint already returns the row it wrote, so re-reading the
+   * whole catalogue afterwards was a second round trip for data we were already
+   * holding. That is what made saving feel slow: the list lagged behind the
+   * dialog closing, and the publish bar's "last edited" stamp did not move
+   * until something unrelated happened to refresh it.
+   *
+   * Falls back to a full `load()` if the server sends no row, so a future
+   * endpoint change degrades to "slower" rather than "wrong".
+   */
+  function mergeProduct(updated: ProductView) {
+    const known = products.some((p) => p.id === updated.id);
+    products = known
+      ? products.map((p) => (p.id === updated.id ? updated : p))
+      : [updated, ...products];
+    onChanged();
+  }
+
   async function remove(product: ProductView) {
     const ok = confirm(
       `Delete "${product.name}"? It cannot be undone, and any promotion using it will be updated.`,
@@ -85,23 +116,32 @@
       error ? 'bad' : 'ok',
       error ?? `Deleted ${product.name} from the local catalogue. Publish to take it off the shop.`,
     );
-    await load();
+
+    if (error) await load();
+    else products = products.filter((p) => p.id !== product.id);
+
+    onChanged();
   }
 
   async function toggleHidden(product: ProductView) {
-    const { error } = await adminFetch(`/api/admin/products/${product.id}`, {
-      method: 'PATCH',
-      json: { hidden: !product.hidden },
-    });
+    const { data, error } = await adminFetch<{ product: ProductView }>(
+      `/api/admin/products/${product.id}`,
+      { method: 'PATCH', json: { hidden: !product.hidden } },
+    );
+
+    if (error) return flash.show('bad', error);
 
     // Hiding a product *removes* it from the storefront, so it is a real change
-    // — but it is still only a change locally until published.
-    const subject = product.hidden
-      ? `${product.name} will show on the shop again once published.`
-      : `${product.name} hidden locally. Publish to take it off the shop.`;
+    // — but still only a change locally until published.
+    flash.show(
+      'ok',
+      product.hidden
+        ? `${product.name} will show on the shop again once published.`
+        : `${product.name} hidden locally. Publish to take it off the shop.`,
+    );
 
-    flash.show(error ? 'bad' : 'ok', error ?? subject);
-    await load();
+    if (data?.product) mergeProduct(data.product);
+    else await load();
   }
 
   const visible = $derived(
@@ -201,10 +241,11 @@
   <ProductForm
     product={editing}
     onClose={() => (editing = null)}
-    onSaved={async (message) => {
+    onSaved={(message, updated) => {
       editing = null;
       flash.show('ok', message);
-      await load();
+      if (updated) mergeProduct(updated);
+      else void load();
     }}
   />
 {/if}

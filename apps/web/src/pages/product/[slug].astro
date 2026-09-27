@@ -15,7 +15,7 @@ import PaymentNotice from '@/components/PaymentNotice.astro';
 import { getCatalogue, productsIn, sortProducts } from '@/lib/api';
 import { jsonLd } from '@/lib/seo';
 import { CATEGORY_META, CURRENCY, PAYMENT_TERMS, SALES_REGION, amount, money, type Category } from '@crochet/shared';
-import { whatsappUrl } from '@/lib/contact';
+import { whatsappProductUrl, whatsappUrl } from '@/lib/contact';
 import { absolute } from '@/lib/config';
 import type { GetStaticPaths } from 'astro';
 
@@ -37,9 +37,26 @@ const categoryMeta = CATEGORY_META.find((c) => c.id === (product.category as Cat
  * request time because the canonical origin is only known then — a hardcoded
  * `https://example.com` in a message is a support ticket waiting to happen.
  */
-const askUrl = whatsappUrl(
-  `Hello! I'd like to ask about the ${product.name}.\n\n${absolute(`/product/${product.slug}/`)}\n\n${SALES_REGION.orderNote}`,
-);
+  const productUrl = absolute(`/product/${product.slug}/`);
+
+  /**
+   * The order link for *this* piece — the shortest path from "I want that one"
+   * to a message the seller can act on.
+   *
+   * A visitor who has decided does not want a basket; they want to say so. The
+   * basket route still exists for people ordering several things, so this sits
+   * beside it rather than replacing it.
+   */
+  const orderUrl = whatsappProductUrl(product, productUrl);
+
+  /**
+   * A WhatsApp message about this specific piece, with its URL in it. Built at
+   * request time because the canonical origin is only known then — a hardcoded
+   * `https://example.com` in a message is a support ticket waiting to happen.
+   */
+  const askUrl = whatsappUrl(
+    `Hello! I'd like to ask about the ${product.name}.\n\n${productUrl}\n\n${SALES_REGION.orderNote}`,
+  );
 
 const related = sortProducts(
   productsIn(products, product.category as Category).filter((p) => p.id !== product.id),
@@ -153,6 +170,21 @@ const jsonLdData = {
         </div>
 
         <a
+          class="ask ask--order"
+          href={orderUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24"
+            ></path>
+          </svg>
+          Order this on WhatsApp
+        </a>
+
+        <a
           class="ask"
           href={askUrl}
           target="_blank"
@@ -164,7 +196,7 @@ const jsonLdData = {
               d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24"
             ></path>
           </svg>
-          Ask about this piece on WhatsApp
+          Ask a question instead
         </a>
 
         {
@@ -316,6 +348,22 @@ const jsonLdData = {
 
   .ask:hover {
     background: var(--color-rose-deep);
+    color: #fff;
+  }
+
+  /**
+   * The order link is the primary action here and is filled to say so; "ask a
+   * question" stays an outline. Both are WhatsApp and both open the same
+   * conversation — they differ only in what the seller reads first, and in
+   * whether a decided visitor is made to assemble a basket first.
+   */
+  .ask--order {
+    background: var(--color-rose-deep);
+    color: #fff;
+  }
+
+  .ask--order:hover {
+    background: color-mix(in oklab, var(--color-rose-deep) 88%, black);
     color: #fff;
   }
 

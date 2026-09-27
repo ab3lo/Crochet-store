@@ -76,6 +76,63 @@ export function whatsappUrl(message: string = contact.message): string {
  * so there is no "where do you post to?" round trip before the maker will
  * even start.
  */
+/**
+ * A per-product WhatsApp link.
+ *
+ * ## Why a product needs its own message, not a generic one
+ *
+ * The consistent advice on `wa.me` links is to keep the number constant across
+ * the site and vary the *message* per placement, so the seller already knows
+ * what prompted the conversation before reading it. A generic "Hello!" makes
+ * every enquiry a cold open.
+ *
+ * This is the highest-value link on the page and it did not exist: a visitor
+ * who had decided about one piece had to add it to a basket, open the basket,
+ * and send a whole order — three steps for a purchase they had already chosen.
+ * One tap, one message, one product.
+ *
+ * ## Why the message is short
+ *
+ * The prefilled text should read like something the customer would genuinely
+ * have typed, stay editable, and ask only for what is needed to start. So:
+ * what they want, which piece, the price, and the link. No delivery or payment
+ * boilerplate — the customer has already read `RegionNotice` and
+ * `PaymentNotice` directly above the button, and repeating it here only makes
+ * the message something to delete before sending.
+ */
+export function whatsappProductUrl(
+  product: {
+    name: string;
+    priceCents: number;
+    stock: number;
+    madeToOrder: boolean;
+  },
+  url: string,
+): string {
+  // Out of stock is the one case where the message should ask something
+  // different, because "I'd like to order this" is not what the customer means
+  // when the piece is sold out — they mean "what have you got instead".
+  const aside = product.madeToOrder
+    ? 'I know it is made to order.'
+    : product.stock > 0
+      ? ''
+      : '\n\nI see it is sold out — is anything similar available?';
+
+  return whatsappUrl(
+    `Hello! I'd like to order the ${product.name} (${money(product.priceCents)}).` +
+      `${aside}\n\n${url}`,
+  );
+}
+
+/**
+ * The basket handoff.
+ *
+ * Everything the seller needs to take the order in one message: the lines, the
+ * total, the delivery region, the payment terms, and a prompt for the address.
+ * Deliberately *not* shortened the way the per-product link is — this one
+ * replaces a checkout form, so the details a form would have collected belong
+ * in it.
+ */
 export function whatsappOrderUrl(
   lines: { name: string; quantity: number; unitPriceCents: number }[],
   subtotalCents: number,

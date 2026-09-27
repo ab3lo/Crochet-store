@@ -25,7 +25,12 @@
   interface Props {
     product: Draft;
     onClose: () => void;
-    onSaved: (message: string) => void;
+    /**
+     * Called after a successful write. `updated` is the row the server just
+     * wrote, so the list can patch itself in place rather than re-fetching the
+     * whole catalogue — which is what made a save feel like it hung.
+     */
+    onSaved: (message: string, updated: ProductView | null) => void;
   }
 
   let { product, onClose, onSaved }: Props = $props();
@@ -202,11 +207,11 @@
     // `savedId` rather than `initial.id`: an upload may have created the row
     // already, and POSTing again would hit the unique slug constraint.
     const res = savedId
-      ? await adminFetch<{ id: string }>(`/api/admin/products/${savedId}`, {
-          method: 'PATCH',
-          json: body,
-        })
-      : await adminFetch<{ id: string }>('/api/admin/products', {
+      ? await adminFetch<{ id: string; product: ProductView }>(
+          `/api/admin/products/${savedId}`,
+          { method: 'PATCH', json: body },
+        )
+      : await adminFetch<{ id: string; product: ProductView }>('/api/admin/products', {
           method: 'POST',
           json: body,
         });
@@ -220,13 +225,11 @@
     }
 
     // "Saved" and "live" are different claims, and saying only "Saved" is the
-    // one thing this panel must never do. The old version could append a
-    // deploy-hook state here; now the answer is always the same, which is
-    // worth stating plainly rather than leaving to a status the owner has to
-    // go and look for.
+    // one thing this panel must never do.
     onSaved(
       `${initial.id ? 'Saved' : 'Added'} ${name.trim()} to the local catalogue. ` +
         `Not on the shop yet — press Publish when you are ready.`,
+      res.data?.product ?? null,
     );
   }
 

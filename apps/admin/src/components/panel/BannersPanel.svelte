@@ -44,6 +44,17 @@
 
   type Draft = Partial<BannerView> & { id?: string };
 
+  interface Props {
+    /**
+     * Called after any successful write, so the dashboard can refresh the
+     * publish bar. Without it the bar's "last edited" stamp does not move when
+     * a promotion is saved, which reads as the change not having registered.
+     */
+    onChanged?: () => void;
+  }
+
+  let { onChanged = () => {} }: Props = $props();
+
   let banners = $state<BannerView[]>([]);
   let products = $state<ProductView[]>([]);
   let loading = $state(true);
@@ -251,6 +262,7 @@
     // exists to prevent, and the fix is to never imply otherwise.
     flash.show('ok', `${subject} Press Publish to send it to the shop.`);
     await load();
+    onChanged();
   }
 
   async function remove(banner: BannerView) {
@@ -261,6 +273,7 @@
     if (error) return flash.show('bad', error);
     flash.show('ok', `Deleted ${banner.name} from the catalogue. Publish to take it off the shop.`);
     await load();
+    onChanged();
   }
 
   async function toggleLive(banner: BannerView) {
@@ -277,6 +290,7 @@
         : `${banner.name} pulled back to a draft.`;
     flash.show('ok', `${subject} Publish to update the shop.`);
     await load();
+    onChanged();
   }
 
   const statusLabel: Record<string, string> = {

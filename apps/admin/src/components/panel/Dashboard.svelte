@@ -73,6 +73,32 @@
   });
 
   /**
+   * Keep the publish bar honest without anyone having to remember to refresh.
+   *
+   * The bar answers "is the site showing what I just typed?", and it was only
+   * refreshed on mount and after a publish — so after an edit it sat at its old
+   * timestamp, which looks exactly like the change not having registered. Two
+   * fixes, both cheap because `/api/admin/stats` is a ~5 ms local read:
+   *
+   *   • `onChanged` from the panels below refreshes it the moment a write lands.
+   *   • A 3-second poll catches anything this tab did not do — a change made in
+   *     another tab, or by `bun run seed` in a terminal.
+   *
+   * Polling pauses while the tab is hidden, so a backgrounded panel costs
+   * nothing. WebSockets or SSE would be the "proper" answer, and are absurd for
+   * a single-user tool on loopback.
+   */
+  $effect(() => {
+    const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        void loadStats();
+      }
+    }, 3000);
+
+    return () => clearInterval(timer);
+  });
+
+  /**
    * Are there local edits the shop has not seen?
    *
    * String comparison of two ISO timestamps is safe here precisely because
@@ -289,11 +315,11 @@
 
   {#if tab === 'products'}
     <div role="tabpanel" id="panel-products" aria-labelledby="tab-products">
-      <ProductsPanel />
+      <ProductsPanel onChanged={loadStats} />
     </div>
   {:else}
     <div role="tabpanel" id="panel-banners" aria-labelledby="tab-banners">
-      <BannersPanel />
+      <BannersPanel onChanged={loadStats} />
     </div>
   {/if}
 </div>
