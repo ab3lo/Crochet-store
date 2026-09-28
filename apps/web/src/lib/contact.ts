@@ -31,13 +31,13 @@ export const contact = {
    */
   whatsapp: '919999999999',
 
-  email: 'hello@crochetandco.example',
+  email: 'Assalamu Alikum@crochetandco.example',
 
   /**
    * Pre-filled opening message. WhatsApp ignores a trailing `?text=` on some
    * clients, so it stays short and plain.
    */
-  message: "Hello! I found you on the shop and I'd like to ask about something.",
+  message: "Assalamu Alaikum! I found you on the shop and I'd like to ask about something.",
 
   /**
    * The WhatsApp group where work-in-progress goes — what is on the hook
@@ -83,7 +83,7 @@ export function whatsappUrl(message: string = contact.message): string {
  *
  * The consistent advice on `wa.me` links is to keep the number constant across
  * the site and vary the *message* per placement, so the seller already knows
- * what prompted the conversation before reading it. A generic "Hello!" makes
+ * what prompted the conversation before reading it. A generic "Assalamu Alikum!" makes
  * every enquiry a cold open.
  *
  * This is the highest-value link on the page and it did not exist: a visitor
@@ -119,7 +119,7 @@ export function whatsappProductUrl(
       : '\n\nI see it is sold out — is anything similar available?';
 
   return whatsappUrl(
-    `Hello! I'd like to order the ${product.name} (${money(product.priceCents)}).` +
+    `Assalamu Alaikum! I'd like to order the ${product.name} (${money(product.priceCents)}).` +
       `${aside}\n\n${url}`,
   );
 }
@@ -145,7 +145,7 @@ export function whatsappOrderUrl(
     .join('\n');
 
   return whatsappUrl(
-    `Hello! I'd like to order:\n\n${items}\n\nTotal: ${money(subtotalCents)}\n\n` +
+    `Assalamu Alikum! I'd like to order:\n\n${items}\n\nTotal: ${money(subtotalCents)}\n\n` +
       `${SALES_REGION.orderNote}\n${PAYMENT_TERMS.orderNote}\n\n` +
       `My address in ${SALES_REGION.city} is:`,
   );
@@ -167,7 +167,7 @@ export function orderEmailUrl(
     `mailto:${contact.email}` +
     `?subject=${encodeURIComponent(`Order from Crochet & Co. — ${SALES_REGION.city}`)}` +
     `&body=${encodeURIComponent(
-      `Hello! I'd like to order:\n\n${items}\n\nTotal: ${money(subtotalCents)}\n\n` +
+      `Assalamu Alikum! I'd like to order:\n\n${items}\n\nTotal: ${money(subtotalCents)}\n\n` +
         `${SALES_REGION.orderNote}\n\nMy address in ${SALES_REGION.city} is:`,
     )}`
   );
