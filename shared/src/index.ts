@@ -97,15 +97,15 @@ export const PAYMENT_TERMS = {
     `Nothing on this site is made until you order it. Message me on WhatsApp to ` +
     `start an order, and I will send you the details for a ` +
     `${ADVANCE_PERCENT}% advance by ${METHODS_TEXT} — or any other mobile ` +
-    `wallet I send you. The balance is due when you collect.`,
+    `. The remainig amount is paid when you product is handed over to you.`,
 
   /** One line, for a product page or the basket where space is tight. */
-  short: `${ADVANCE_PERCENT}% advance by mobile wallet to start. Balance on collection.`,
+  short: `${ADVANCE_PERCENT}% advance by mobile wallet to start. Remaining amount paid on hand-over.`,
 
   /** Appended to every outbound order message, next to `orderNote`. */
   orderNote:
     `Payment: ${ADVANCE_PERCENT}% advance by ${METHODS_TEXT} ` +
-    `(or any mobile wallet I send) before I start. Balance on collection.`,
+    `before I start. Remaining amount paid on hand-over.`,
 } as const;
 
 /* ── Categories ──────────────────────────────────────────────────────── */
