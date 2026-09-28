@@ -31,7 +31,7 @@ export const contact = {
    */
   whatsapp: '919999999999',
 
-  email: 'Assalamu Alikum@crochetandco.example',
+  email: 'hibot@doxxed.com',
 
   /**
    * Pre-filled opening message. WhatsApp ignores a trailing `?text=` on some
@@ -146,7 +146,7 @@ export function whatsappOrderUrl(
 
   return whatsappUrl(
     `Assalamu Alikum! I'd like to order:\n\n${items}\n\nTotal: ${money(subtotalCents)}\n\n` +
-      `${SALES_REGION.orderNote}\n${PAYMENT_TERMS.orderNote}\n\n` +
+      `\n${PAYMENT_TERMS.orderNote}\n\n` +
       `My address in ${SALES_REGION.city} is:`,
   );
 }
@@ -168,7 +168,7 @@ export function orderEmailUrl(
     `?subject=${encodeURIComponent(`Order from Crochet & Co. — ${SALES_REGION.city}`)}` +
     `&body=${encodeURIComponent(
       `Assalamu Alikum! I'd like to order:\n\n${items}\n\nTotal: ${money(subtotalCents)}\n\n` +
-        `${SALES_REGION.orderNote}\n\nMy address in ${SALES_REGION.city} is:`,
+        `\n\nMy address in ${SALES_REGION.city} is:`,
     )}`
   );
 }
