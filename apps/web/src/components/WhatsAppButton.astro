@@ -1,3 +1,37 @@
+---
+/**
+ * Floating WhatsApp button.
+ *
+ * Static markup plus CSS — no island, no JavaScript. It is a link; making it
+ * a hydrated component would ship a runtime for something the browser
+ * already does.
+ *
+ * The mark is inline SVG rather than a font or an image request: no extra
+ * network request, and it inherits `currentColor` so the button's palette
+ * lives in CSS.
+ *
+ * ## Why it is sticky rather than fixed
+ *
+ * `position: fixed` pinned the button to the viewport, which meant it also sat
+ * on top of the footer — over the footer's own links, on the one part of the
+ * page where a chat bubble has nothing to do. A fixed element cannot know
+ * where the footer is; it has no idea what it is covering.
+ *
+ * So the button is a sticky element inside a track (`.wa-track` in
+ * `Storefront.astro`) that runs from the top of the page down to the end of
+ * the content. The sticky constraint is the track's own box, so the button
+ * rides the bottom of the viewport for as long as the track spans it, and then
+ * — as the track's bottom edge, which is the footer's top edge, comes up — it
+ * is pushed up with the content and out of the way. No scroll listener, no
+ * `IntersectionObserver`, and it is correct before any JavaScript runs.
+ *
+ * The zero-height pin plus `translate: 0 -100%` is what lets a box of unknown
+ * height be positioned by its *bottom* edge: the pin is stuck 1rem above the
+ * viewport bottom, and the pill hangs entirely above that line. Using `top`
+ * with the pill's height subtracted would have meant restating that height
+ * here and keeping it in step with the padding below.
+ */
+
 import { contact, whatsappUrl } from '@/lib/contact';
 
 const href = whatsappUrl();
