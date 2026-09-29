@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-27T14:51:41.816Z",
+  "generatedAt": "2026-09-29T16:00:20.379Z",
   "products": [
     {
       "id": "3b282034-151e-44e5-a228-c11f6b0fc672",
@@ -24,8 +24,8 @@
     },
     {
       "id": "01162327-b888-4d89-8a0c-7e93898121ba",
-      "slug": "sunflower-tote",
-      "name": "Sunflower Tote",
+      "slug": "sunflower-hangy",
+      "name": "Sunflower Bag Charm",
       "tagline": "An cute Sunflower plushie to hang aside a bag or keychain",
       "description": "",
       "priceCents": 30000,
@@ -40,7 +40,7 @@
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:43.374Z",
-      "updatedAt": "2026-09-27T13:22:36.640Z",
+      "updatedAt": "2026-09-29T16:00:16.404Z",
       "sale": null
     },
     {
