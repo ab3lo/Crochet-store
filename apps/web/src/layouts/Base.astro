@@ -49,23 +49,6 @@ const ogImage = absolute(image ?? '/images/og-default.svg');
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#FBF4F2" />
-
-    {/* Fraunces is the display face; preload so the hero does not reflow.
-        Same file the stylesheet references, so the fetch is deduped. */}
-    <link
-      rel="preload"
-      href="/fonts/fraunces.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="/fonts/instrument-sans.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
   </head>
   <body class:list={[bare && 'is-bare']}>
     <a class="skip-link" href="#main">Skip to content</a>
