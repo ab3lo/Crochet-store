@@ -80,12 +80,29 @@ export default defineConfig({
         "default-src 'self'",
         "img-src 'self' data:",
         "font-src 'self'",
-        "connect-src 'self'",
+        // `static.cloudflareinsights.com` is Cloudflare's own Web Analytics
+        // beacon, which Pages injects into the served HTML. The policy blocked
+        // it, so the script failed on every page and analytics recorded nothing
+        // while appearing to be on. `connect-src` needs the same origin for the
+        // beacon's beacons it POSTs back.
+        "connect-src 'self' https://cloudflareinsights.com https://*.cloudflareinsights.com",
         "form-action 'self'",
         "base-uri 'self'",
         "object-src 'none'",
         "upgrade-insecure-requests",
       ],
+      /**
+       * `script-src` is managed by Astro and cannot be written by hand —
+       * putting it in `directives` fails the build, which is the right
+       * behaviour, since a hand-written `script-src` would drop the hashes and
+       * with them every inline script Astro emits.
+       *
+       * The one host added is Cloudflare's Web Analytics beacon, which Pages
+       * injects into the served HTML and which the policy was blocking.
+       */
+      scriptDirective: {
+        resources: [{ resource: 'https://static.cloudflareinsights.com', kind: 'element' }],
+      },
       /**
        * `style-src-elem` stays hash-only — that is the directive covering
        * `<style>` blocks, and Astro hashes the ones it emits.
