@@ -15,7 +15,7 @@ import PaymentNotice from '@/components/PaymentNotice.astro';
 import { getCatalogue, productsIn, sortProducts } from '@/lib/api';
 import { jsonLd } from '@/lib/seo';
 import { CATEGORY_META, CURRENCY, PAYMENT_TERMS, SALES_REGION, amount, money, type Category } from '@crochet/shared';
-import { whatsappProductUrl, whatsappUrl } from '@/lib/contact';
+import { whatsappHref } from '@/lib/contact';
 import { absolute } from '@/lib/config';
 import type { GetStaticPaths } from 'astro';
 
@@ -32,12 +32,7 @@ const { products, banners } = await getCatalogue();
 
 const categoryMeta = CATEGORY_META.find((c) => c.id === (product.category as Category))!;
 
-/**
- * A WhatsApp message about this specific piece, with its URL in it. Built at
- * request time because the canonical origin is only known then — a hardcoded
- * `https://example.com` in a message is a support ticket waiting to happen.
- */
-  const productUrl = absolute(`/product/${product.slug}/`);
+const productUrl = absolute(`/product/${product.slug}/`);
 
   /**
    * The order link for *this* piece — the shortest path from "I want that one"
@@ -47,16 +42,36 @@ const categoryMeta = CATEGORY_META.find((c) => c.id === (product.category as Cat
    * basket route still exists for people ordering several things, so this sits
    * beside it rather than replacing it.
    */
-  const orderUrl = whatsappProductUrl(product, productUrl);
-
   /**
-   * A WhatsApp message about this specific piece, with its URL in it. Built at
-   * request time because the canonical origin is only known then — a hardcoded
-   * `https://example.com` in a message is a support ticket waiting to happen.
+   * A visitor who has decided does not want a basket; they want to say so. The
+   * basket route still exists for people ordering several things, so this sits
+   * beside it rather than replacing it.
+   *
+   * One message, one button. It used to sit beside an "ask a question instead"
+   * link that produced nearly the same text, so the visitor picked between two
+   * buttons to say the same thing. The intent is now inferred: a piece in stock
+   * reads as an order, a sold-out one reads as a question about alternatives.
+   *
+   * Built at request time because the canonical origin is only known then — a
+   * hardcoded `https://example.com` in a message is a support ticket waiting to
+   * happen.
    */
-  const askUrl = whatsappUrl(
-    `Hello! I'd like to ask about the ${product.name}.\n\n${productUrl}\n\n${SALES_REGION.orderNote}`,
-  );
+  /**
+   * Made-to-order pieces are orderable with `stock` at zero — that is what
+   * zero stock *means* for them. Testing `stock > 0` on its own marked every
+   * product in the shop as sold out, because all three are made on demand.
+   */
+  const orderable = product.stock > 0 || product.madeToOrder;
+
+  const waHref = whatsappHref({
+    kind: 'product',
+    name: product.name,
+    priceCents: product.priceCents,
+    url: productUrl,
+    orderable,
+  });
+
+  const waLabel = orderable ? 'Order this on WhatsApp' : 'Ask about this piece';
 
 const related = sortProducts(
   productsIn(products, product.category as Category).filter((p) => p.id !== product.id),
@@ -171,7 +186,7 @@ const jsonLdData = {
 
         <a
           class="ask ask--order"
-          href={orderUrl}
+          href={waHref}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -181,22 +196,7 @@ const jsonLdData = {
               d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24"
             ></path>
           </svg>
-          Order this on WhatsApp
-        </a>
-
-        <a
-          class="ask"
-          href={askUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
-            <path
-              fill="currentColor"
-              d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.2 0 4.27.86 5.83 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24"
-            ></path>
-          </svg>
-          Ask a question instead
+          {waLabel}
         </a>
 
         {

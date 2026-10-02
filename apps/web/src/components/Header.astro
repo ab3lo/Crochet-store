@@ -9,7 +9,7 @@
 
 import CartButton from '@/components/islands/CartButton.svelte';
 import MobileNav from '@/components/islands/MobileNav.svelte';
-import { whatsappUrl } from '@/lib/contact';
+import { whatsappHref } from '@/lib/contact';
 import {
   DESKTOP_SHOP_LINKS,
   MOBILE_INFORMATION_LINKS,
@@ -74,7 +74,7 @@ const aboutLink = SITE_INFORMATION_LINKS[0]!;
           path={path}
           shopLinks={MOBILE_SHOP_LINKS}
           informationLinks={MOBILE_INFORMATION_LINKS}
-          whatsappHref={whatsappUrl()}
+          whatsappHref={whatsappHref({ kind: 'general' })}
           client:load
         />
       </div>

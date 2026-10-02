@@ -1,217 +1,89 @@
 <!--
-  WhatsApp enquiry composer.
+  Custom-order composer.
 
-  Replaces the old enquiry form. A form that posts to a database was the
-  wrong shape for this shop: a one-person business answers every message by
-  hand, and the conversation has to happen somewhere the maker actually
-  looks. WhatsApp is that place. A contact form in a separate admin panel is
-  a second inbox nobody wants.
+  Only used on the custom-orders page. It used to be a five-category picker
+  plus six canned questions plus a textarea plus a name box, which produced a
+  draft the customer then had to edit before sending — a form that does not
+  submit a form.
 
-  Three ways to start, all landing in the same conversation:
-
-    1. Tap a common question — "different colours", "commission", and so on.
-       Each one writes itself into the message, so the maker can see what was
-       being asked without a round trip.
-    2. Type your own.
-    3. Do both.
-
-  The message is assembled here rather than in the link, because the link has
-  to be a plain string and a 2 KB query string is not something to build by
-  hand. It opens with `wa.me`, which is WhatsApp's own click-to-chat — there
-  is no API key involved and nothing to configure.
-
-  If the API happens to be running, the same message is also recorded in the
-  admin's enquiry list. That is a convenience, not a dependency: the redirect
-  opens first and the record is fire-and-forget, so a missing or broken API
-  never blocks the conversation.
+  Now: one free-text box and three intents that change what the message opens
+  with. The category chips went because they duplicated what the URL already
+  says, and six canned questions were six ways to send the same vague message.
 -->
 
 <script lang="ts">
-  import type { Category, ProductView } from '@crochet/shared';
-  import { CATEGORIES } from '@crochet/shared';
-  import { SALES_REGION, whatsappUrl } from '@/lib/contact';
+  import { whatsappHref } from '@/lib/contact';
 
   interface Props {
-    /** Prefill with the piece being viewed, so the message is about it. */
-    product?: ProductView | null;
-    /** Overrides the default "what would you like to ask about" heading. */
     title?: string;
   }
 
-  let { product = null, title = 'Ask about anything' }: Props = $props();
+  let { title = 'Tell me what you have in mind' }: Props = $props();
 
-  /**
-   * Common openers. `body` is what lands in the message — written as a
-   * question so it reads as something to answer rather than a label.
-   */
-  const TOPICS = [
-    {
-      id: 'colours',
-      label: 'Different colours',
-      body: 'Could you make this in other colours? What shades are available?',
-    },
+  const INTENTS = [
     {
       id: 'commission',
-      label: 'Commission a piece',
-      body: 'I would like to commission something custom.',
+      label: 'A whole new piece',
+      text: "I'd like something made from scratch.",
     },
     {
-      id: 'stock',
-      label: 'Is it ready?',
-      body: 'Is this one ready now, or made to order? How long would it take?',
+      id: 'change',
+      label: 'An existing piece, changed',
+      text: "I'd like one of your existing pieces made differently.",
     },
     {
-      id: 'delivery',
-      label: 'Collection & delivery',
-      body: `How does collection or local delivery in ${SALES_REGION.city} work?`,
-    },
-    {
-      id: 'care',
-      label: 'How do I care for it?',
-      body: 'How should I wash and store it?',
-    },
-    {
-      id: 'budget',
-      label: 'Can it cost less?',
-      body: 'Could you make it for a smaller budget? What would change?',
+      id: 'quantity',
+      label: 'Several of something',
+      text: "I'd like to order several of the same piece.",
     },
   ] as const;
 
-  type TopicId = (typeof TOPICS)[number]['id'];
+  type IntentId = (typeof INTENTS)[number]['id'];
 
-  const CATEGORY_LABELS: Record<Category, string> = {
-    keychains: 'keychains',
-    bags: 'bags',
-    purses: 'purses',
-    bouquets: 'bouquets',
-    custom: 'a custom piece',
-  };
-
-  let chosen = $state<Set<TopicId>>(new Set());
-  let ownMessage = $state('');
-  let kind = $state<Category>('custom');
+  let intent = $state<IntentId>('commission');
+  let details = $state('');
   let name = $state('');
 
-  function toggle(id: TopicId) {
-    // Copy the set: mutating a $state Set in place does not trigger.
-    const next = new Set(chosen);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    chosen = next;
-  }
+  const seed = $derived(INTENTS.find((i) => i.id === intent)!.text);
+  const body = $derived([seed, details.trim()].filter(Boolean).join(' '));
 
-  const hasContent = $derived(chosen.size > 0 || ownMessage.trim().length > 0);
+  const canSend = $derived(body.trim().length > 0);
 
-  const productUrl = $derived(
-    product && typeof window !== 'undefined'
-      ? `${window.location.origin}/product/${product.slug}/`
-      : '',
+  const href = $derived(
+    whatsappHref({ kind: 'custom', text: body, name: name.trim() || undefined }),
   );
-
-  /** The full message, in the order a person would say it. */
-  const message = $derived.by(() => {
-    const parts: string[] = [];
-
-    if (name.trim()) parts.push(`Hello, this is ${name.trim()}.`);
-    else parts.push('Hello!');
-
-    const asked = TOPICS.filter((t) => chosen.has(t.id));
-    if (asked.length > 0) {
-      parts.push(`About ${CATEGORY_LABELS[kind]}:`, ...asked.map((t) => `• ${t.body}`));
-    } else {
-      parts.push(`I'm writing about ${CATEGORY_LABELS[kind]}.`);
-    }
-
-    if (product) parts.push(`Specifically: ${product.name}${productUrl ? `\n${productUrl}` : ''}`);
-
-    const own = ownMessage.trim();
-    if (own) parts.push(`What I wanted to ask:\n${own}`);
-
-    parts.push(SALES_REGION.orderNote);
-
-    return parts.join('\n\n');
-  });
-
-  const href = $derived(whatsappUrl(message));
-
-  function openWhatsApp() {
-    // The whole enquiry. There is nothing else to do — the conversation *is*
-    // the record.
-    //
-    // This used to also fire a `POST /api/orders` whose result was explicitly
-    // ignored, "best-effort copy for the admin's enquiry list". That is gone
-    // with the API. A fire-and-forget write that nobody checked, duplicating
-    // a conversation that was already happening on WhatsApp, was a liability
-    // rather than a backup: it could fail silently, and the panel's copy could
-    // disagree with the actual thread.
-    //
-    // Open synchronously. Any `await` before a `window.open` loses the user
-    // gesture and the browser blocks the popup.
-    window.open(href, '_blank', 'noopener,noreferrer');
-  }
 </script>
 
 <div class="inquiry">
   <h2 class="inquiry-title">{title}</h2>
   <p class="inquiry-note">
-    Pick anything that applies, or just write your own. It all arrives as one
-    WhatsApp message.
+    Tell me what you need and it arrives as one WhatsApp message, ready to send.
   </p>
 
   <div class="field">
-    <span class="label" id="kind-label">What is it about?</span>
-    <div class="chips" role="group" aria-labelledby="kind-label">
-      {#each CATEGORIES as c (c)}
+    <span class="label" id="intent-label">What kind of order is this?</span>
+    <div class="chips" role="group" aria-labelledby="intent-label">
+      {#each INTENTS as i (i.id)}
         <button
           type="button"
           class="chip"
-          class:on={kind === c}
-          onclick={() => (kind = c)}
-          aria-pressed={kind === c}
+          class:on={intent === i.id}
+          onclick={() => (intent = i.id)}
+          aria-pressed={intent === i.id}
         >
-          {CATEGORY_LABELS[c]}
+          {i.label}
         </button>
       {/each}
     </div>
   </div>
 
   <div class="field">
-    <span class="label" id="topic-label">Common questions</span>
-    <div class="chips chips--topics" role="group" aria-labelledby="topic-label">
-      {#each TOPICS as topic (topic.id)}
-        <button
-          type="button"
-          class="chip chip--topic"
-          class:on={chosen.has(topic.id)}
-          onclick={() => toggle(topic.id)}
-          aria-pressed={chosen.has(topic.id)}
-        >
-          <span class="tick" aria-hidden="true">
-            {#if chosen.has(topic.id)}
-              <svg viewBox="0 0 14 14" width="11" height="11">
-                <path
-                  d="M2.5 7.2l3 3L11.5 4"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"></path>
-              </svg>
-            {/if}
-          </span>
-          {topic.label}
-        </button>
-      {/each}
-    </div>
-  </div>
-
-  <div class="field">
-    <label for="inq-own">Or write it yourself</label>
+    <label for="inq-own">What would you like made?</label>
     <textarea
       id="inq-own"
-      bind:value={ownMessage}
-      rows="4"
-      placeholder="Sizes, colours, a date you need it by, a wedding you are dressing…"
+      bind:value={details}
+      rows="5"
+      placeholder="Colours, size, a date you need it by, a wedding you are dressing…"
     ></textarea>
   </div>
 
@@ -221,11 +93,14 @@
   </div>
 
   <div class="actions">
-    <button
-      type="button"
+    <a
       class="btn-stitch"
-      disabled={!hasContent}
-      onclick={openWhatsApp}
+      class:disabled={!canSend}
+      aria-disabled={!canSend}
+      onclick={(e) => !canSend && e.preventDefault()}
+      {href}
+      target="_blank"
+      rel="noopener noreferrer"
     >
       <svg class="wa-mark" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
         <path
@@ -234,13 +109,13 @@
         ></path>
       </svg>
       Send on WhatsApp
-    </button>
+    </a>
 
     <p class="hint">
-      {#if hasContent}
+      {#if canSend}
         Opens WhatsApp with your message ready to send.
       {:else}
-        Pick a question or write something first.
+        Write a line about what you need first.
       {/if}
     </p>
   </div>
@@ -288,7 +163,6 @@
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
     padding: 0.4rem 0.8rem;
     border-radius: 999px;
     border: 1.5px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
@@ -307,17 +181,6 @@
     border-color: var(--color-rose-deep);
     color: var(--color-ink);
     font-weight: 600;
-  }
-
-  /* The tick is a fixed-width box whether or not it holds a glyph, so
-     selecting a chip does not make the row jump sideways. */
-  .tick {
-    display: inline-grid;
-    place-items: center;
-    width: 0.9rem;
-    height: 0.9rem;
-    flex-shrink: 0;
-    color: var(--color-rose-deep);
   }
 
   /* ── Fields ────────────────────────────────────────────────────── */
@@ -349,7 +212,9 @@
 
   .actions { display: grid; gap: 0.5rem; justify-items: start; }
 
-  .btn-stitch:disabled {
+  /* An anchor cannot be `:disabled`, so the blocked state is a class. It also
+     has to stop the navigation, not just look inert — see `onclick`. */
+  .btn-stitch.disabled {
     opacity: 0.45;
     cursor: not-allowed;
     transform: none;

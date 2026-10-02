@@ -4,7 +4,7 @@ import RegionNotice from '@/components/RegionNotice.astro';
 import PaymentNotice from '@/components/PaymentNotice.astro';
 import { getCatalogue } from '@/lib/api';
 import { PAYMENT_TERMS, SALES_REGION } from '@crochet/shared';
-import { whatsappUrl } from '@/lib/contact';
+import { whatsappHref } from '@/lib/contact';
 
 const { banners } = await getCatalogue();
 
@@ -112,7 +112,7 @@ const FAQ = [
       <p class="cta-text">In {SALES_REGION.city}? Message me.</p>
       <a
         class="btn-stitch"
-        href={whatsappUrl()}
+        href={whatsappHref({ kind: 'general' })}
         target="_blank"
         rel="noopener noreferrer">Message on WhatsApp</a
       >

@@ -16,7 +16,7 @@
 
 import type { CartLine, ProductView } from '@crochet/shared';
 import { writable, get, type Readable } from 'svelte/store';
-import { orderEmailUrl, whatsappOrderUrl } from '@/lib/contact';
+import { SALES_REGION, composeMessage, contact, whatsappUrl } from '@/lib/contact';
 
 const STORAGE_KEY = 'crochet.cart.v1';
 
@@ -194,8 +194,18 @@ export const checkout = {
   paymentLink: '',
 
   href(lines: CartLine[], subtotalCents: number): string {
-    if (this.channel === 'whatsapp') return whatsappOrderUrl(lines, subtotalCents);
     if (this.channel === 'link') return this.paymentLink;
-    return orderEmailUrl(lines, subtotalCents);
+
+    const message = composeMessage({ kind: 'basket', lines, subtotalCents });
+
+    if (this.channel === 'email') {
+      return (
+        `mailto:${contact.email}` +
+        `?subject=${encodeURIComponent(`Order — ${SALES_REGION.city}`)}` +
+        `&body=${encodeURIComponent(message)}`
+      );
+    }
+
+    return whatsappUrl(message);
   },
 };

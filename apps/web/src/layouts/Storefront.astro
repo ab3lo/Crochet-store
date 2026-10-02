@@ -7,7 +7,7 @@
 import Base from './Base.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
-import WhatsAppButton from '@/components/WhatsAppButton.astro';
+import WhatsAppButton from '@/components/islands/WhatsAppButton.svelte';
 import BannerRail from '@/components/islands/BannerRail.svelte';
 import CartDrawer from '@/components/islands/CartDrawer.svelte';
 import type { BannerView } from '@crochet/shared';
@@ -38,8 +38,11 @@ const live = banners.filter((b) => b.isLive && b.status !== 'archived');
     offset the pin.
   */}
   <div class="wa-track">
-    {/* Static link, no island. */}
-    <WhatsAppButton />
+    {/* Reads the cart, so the message it opens with is the order the visitor
+        has actually built. Idle rather than load: the fallback message is a
+        cold open either way, and it should not cost anything before first
+        paint. */}
+    <WhatsAppButton client:idle />
 
     <Header />
 
