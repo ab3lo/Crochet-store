@@ -46,18 +46,18 @@ export const amount = (cents: number): string =>
  * message all have to agree on it.
  */
 export const SALES_REGION = {
-  city: 'Bahawalpur',
+  city: 'Bahawalpur and Multan',
   province: 'Punjab',
   country: 'Pakistan',
   /** One line, in the shop's voice, for banners and footers. */
-  note: 'Collection or local delivery within Bahawalpur.',
+  note: 'Collection or local delivery within Bahawalpur and Multan (Delivery Only).',
   /** Longer form, for the shipping page and the order form. */
   detail:
     'Everything is made to order or finished to order, so the shop is open for ' +
     'collection by appointment. Local delivery inside Bahawalpur is possible for ' +
     'larger pieces — message me and we will work out a day and a price.',
   /** Appended to every outbound order message. */
-  orderNote: 'Delivery: collection or local delivery within Bahawalpur only.',
+  orderNote: 'Delivery: collection or local delivery within Bahawalpur and Multan only.',
 } as const;
 
 /**
