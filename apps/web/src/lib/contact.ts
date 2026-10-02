@@ -29,7 +29,7 @@ export const contact = {
    * Full international number, digits only, no leading `+` — that is what
    * `wa.me` expects. For an Indian number that is `91` then the 10 digits.
    */
-  whatsapp: '919999999999',
+  whatsapp: '+923714575133',
 
   email: 'hibot@doxxed.com',
 
