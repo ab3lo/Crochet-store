@@ -101,7 +101,10 @@ export default defineConfig({
        * injects into the served HTML and which the policy was blocking.
        */
       scriptDirective: {
-        resources: [{ resource: 'https://static.cloudflareinsights.com', kind: 'element' }],
+        resources: [
+          { resource: "'self'", kind: 'element' },
+          { resource: 'https://static.cloudflareinsights.com', kind: 'element' },
+        ],
       },
       /**
        * `style-src-elem` stays hash-only — that is the directive covering
