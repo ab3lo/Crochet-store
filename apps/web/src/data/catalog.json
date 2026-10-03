@@ -1,6 +1,28 @@
 {
-  "generatedAt": "2026-10-03T13:58:21.939Z",
+  "generatedAt": "2026-10-03T14:01:58.598Z",
   "products": [
+    {
+      "id": "024938cc-bc65-4788-86c5-dbc25211465a",
+      "slug": "mini-bouquet",
+      "name": "Mini-Bouquet",
+      "tagline": "Bouquet that fits and last forever",
+      "description": "",
+      "priceCents": 50000,
+      "compareAtCents": null,
+      "category": "bouquets",
+      "images": [
+        "/images/products/mini-bouquet-526a5fc01b.jpg",
+        "/images/products/mini-bouquet-215a003d50.jpg"
+      ],
+      "details": {},
+      "stock": 0,
+      "madeToOrder": false,
+      "hidden": false,
+      "sortOrder": 0,
+      "createdAt": "2026-10-03T14:01:15.908Z",
+      "updatedAt": "2026-10-03T14:01:54.702Z",
+      "sale": null
+    },
     {
       "id": "ac466163-aa24-423f-bcb4-2922af1f9120",
       "slug": "black-kitty-keychain",
