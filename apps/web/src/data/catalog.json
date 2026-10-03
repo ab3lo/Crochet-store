@@ -1,6 +1,28 @@
 {
-  "generatedAt": "2026-09-29T16:00:20.379Z",
+  "generatedAt": "2026-10-03T13:56:09.698Z",
   "products": [
+    {
+      "id": "ac466163-aa24-423f-bcb4-2922af1f9120",
+      "slug": "black-kitty-keychain",
+      "name": "Black Kitty Keychain",
+      "tagline": "Looks like a Kitty , Meows like a Kitty",
+      "description": "",
+      "priceCents": 37500,
+      "compareAtCents": 45000,
+      "category": "keychains",
+      "images": [
+        "/images/products/black-kitty-keychain-66e11273a1.jpg",
+        "/images/products/black-kitty-keychain-0440492dbd.jpg"
+      ],
+      "details": {},
+      "stock": 0,
+      "madeToOrder": true,
+      "hidden": false,
+      "sortOrder": 0,
+      "createdAt": "2026-10-03T13:54:15.850Z",
+      "updatedAt": "2026-10-03T13:55:32.686Z",
+      "sale": null
+    },
     {
       "id": "3b282034-151e-44e5-a228-c11f6b0fc672",
       "slug": "jellyfish-keychain",
