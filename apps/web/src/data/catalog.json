@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T14:06:45.365Z",
+  "generatedAt": "2026-10-03T14:07:58.975Z",
   "products": [
     {
       "id": "024938cc-bc65-4788-86c5-dbc25211465a",
@@ -7,8 +7,8 @@
       "name": "Mini-Bouquet",
       "tagline": "Bouquet that fits and last forever",
       "description": "",
-      "priceCents": 50000,
-      "compareAtCents": null,
+      "priceCents": 47000,
+      "compareAtCents": 55000,
       "category": "bouquets",
       "images": [
         "/images/products/mini-bouquet-526a5fc01b.jpg",
@@ -20,7 +20,7 @@
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-10-03T14:01:15.908Z",
-      "updatedAt": "2026-10-03T14:05:36.146Z",
+      "updatedAt": "2026-10-03T14:07:55.537Z",
       "sale": null
     },
     {
