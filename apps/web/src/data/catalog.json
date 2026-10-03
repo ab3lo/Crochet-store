@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T14:07:58.975Z",
+  "generatedAt": "2026-10-03T14:14:08.122Z",
   "products": [
     {
       "id": "024938cc-bc65-4788-86c5-dbc25211465a",
@@ -11,16 +11,19 @@
       "compareAtCents": 55000,
       "category": "bouquets",
       "images": [
+        "/images/products/mini-bouquet-e2326596ec.jpg",
         "/images/products/mini-bouquet-526a5fc01b.jpg",
         "/images/products/mini-bouquet-215a003d50.jpg"
       ],
-      "details": {},
+      "details": {
+        "Finished Size": "Fits in Palm of your Hand"
+      },
       "stock": 0,
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-10-03T14:01:15.908Z",
-      "updatedAt": "2026-10-03T14:07:55.537Z",
+      "updatedAt": "2026-10-03T14:14:05.483Z",
       "sale": null
     },
     {
