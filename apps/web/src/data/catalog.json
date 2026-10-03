@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T13:56:09.698Z",
+  "generatedAt": "2026-10-03T13:57:14.775Z",
   "products": [
     {
       "id": "ac466163-aa24-423f-bcb4-2922af1f9120",
@@ -33,7 +33,8 @@
       "compareAtCents": null,
       "category": "keychains",
       "images": [
-        "/images/products/jellyfish-keychain-552cc8d596.png"
+        "/images/products/jellyfish-keychain-552cc8d596.png",
+        "/images/products/jellyfish-keychain-7108b10225.jpg"
       ],
       "details": {},
       "stock": 0,
@@ -41,7 +42,7 @@
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T13:21:34.766Z",
-      "updatedAt": "2026-09-27T13:21:37.796Z",
+      "updatedAt": "2026-10-03T13:57:12.634Z",
       "sale": null
     },
     {
