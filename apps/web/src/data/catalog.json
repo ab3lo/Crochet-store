@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T14:05:40.380Z",
+  "generatedAt": "2026-10-03T14:06:45.365Z",
   "products": [
     {
       "id": "024938cc-bc65-4788-86c5-dbc25211465a",
@@ -75,7 +75,7 @@
       "description": "",
       "priceCents": 30000,
       "compareAtCents": null,
-      "category": "keychains",
+      "category": "bouquets",
       "images": [
         "/images/products/sunflower-tote-19ee2ad2b2.png",
         "/images/products/sunflower-hangy-b431f770aa.jpg"
@@ -88,7 +88,7 @@
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:43.374Z",
-      "updatedAt": "2026-10-03T13:58:16.111Z",
+      "updatedAt": "2026-10-03T14:06:42.398Z",
       "sale": null
     },
     {
