@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T13:57:14.775Z",
+  "generatedAt": "2026-10-03T13:58:21.939Z",
   "products": [
     {
       "id": "ac466163-aa24-423f-bcb4-2922af1f9120",
@@ -55,15 +55,18 @@
       "compareAtCents": null,
       "category": "keychains",
       "images": [
-        "/images/products/sunflower-tote-19ee2ad2b2.png"
+        "/images/products/sunflower-tote-19ee2ad2b2.png",
+        "/images/products/sunflower-hangy-b431f770aa.jpg"
       ],
-      "details": {},
+      "details": {
+        "Note": "Only the charm is being sold"
+      },
       "stock": 0,
       "madeToOrder": true,
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:43.374Z",
-      "updatedAt": "2026-09-29T16:00:16.404Z",
+      "updatedAt": "2026-10-03T13:58:16.111Z",
       "sale": null
     },
     {
@@ -76,7 +79,8 @@
       "compareAtCents": 400000,
       "category": "bags",
       "images": [
-        "/images/products/floral-crochet-bag-eb3dcac590.png"
+        "/images/products/floral-crochet-bag-eb3dcac590.png",
+        "/images/products/floral-crochet-bag-1f97cad8ff.jpg"
       ],
       "details": {},
       "stock": 0,
@@ -84,7 +88,7 @@
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:02.667Z",
-      "updatedAt": "2026-09-27T14:32:40.479Z",
+      "updatedAt": "2026-10-03T13:57:46.866Z",
       "sale": null
     }
   ],
