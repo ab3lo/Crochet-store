@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T14:01:58.598Z",
+  "generatedAt": "2026-10-03T14:04:02.005Z",
   "products": [
     {
       "id": "024938cc-bc65-4788-86c5-dbc25211465a",
@@ -16,11 +16,11 @@
       ],
       "details": {},
       "stock": 0,
-      "madeToOrder": false,
+      "madeToOrder": true,
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-10-03T14:01:15.908Z",
-      "updatedAt": "2026-10-03T14:01:54.702Z",
+      "updatedAt": "2026-10-03T14:03:58.735Z",
       "sale": null
     },
     {
