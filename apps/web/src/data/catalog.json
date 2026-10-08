@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-03T14:14:08.122Z",
+  "generatedAt": "2026-10-08T13:43:53.508Z",
   "products": [
     {
       "id": "024938cc-bc65-4788-86c5-dbc25211465a",
@@ -62,12 +62,12 @@
         "/images/products/jellyfish-keychain-7108b10225.jpg"
       ],
       "details": {},
-      "stock": 0,
-      "madeToOrder": true,
+      "stock": 5,
+      "madeToOrder": false,
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T13:21:34.766Z",
-      "updatedAt": "2026-10-03T13:57:12.634Z",
+      "updatedAt": "2026-10-08T13:43:50.646Z",
       "sale": null
     },
     {
@@ -87,11 +87,11 @@
         "Note": "Only the charm is being sold"
       },
       "stock": 0,
-      "madeToOrder": true,
+      "madeToOrder": false,
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:43.374Z",
-      "updatedAt": "2026-10-03T14:06:42.398Z",
+      "updatedAt": "2026-10-08T13:43:30.429Z",
       "sale": null
     },
     {
