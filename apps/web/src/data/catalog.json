@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T12:26:06.682Z",
+  "generatedAt": "2026-11-03T14:04:54.904Z",
   "products": [
     {
       "id": "024938cc-bc65-4788-86c5-dbc25211465a",
@@ -18,12 +18,12 @@
       "details": {
         "Finished Size": "Fits in Palm of your Hand"
       },
-      "stock": 0,
+      "stock": 10,
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-10-03T14:01:15.908Z",
-      "updatedAt": "2026-11-02T12:26:03.912Z",
+      "updatedAt": "2026-11-03T14:04:52.113Z",
       "sale": null
     },
     {
@@ -86,12 +86,12 @@
       "details": {
         "Note": "Only the charm is being sold"
       },
-      "stock": 0,
+      "stock": 10,
       "madeToOrder": false,
       "hidden": false,
       "sortOrder": 0,
       "createdAt": "2026-09-27T12:57:43.374Z",
-      "updatedAt": "2026-10-08T13:43:30.429Z",
+      "updatedAt": "2026-11-03T14:04:40.424Z",
       "sale": null
     },
     {
